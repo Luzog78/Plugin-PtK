@@ -70,8 +70,10 @@ public class EntityDamageByEntityHandler implements Listener {
                 fp.getStats().increaseDamageDealt(event.getFinalDamage());
                 if (event.getEntity() instanceof Player && event.getCause() == EntityDamageByEntityEvent.DamageCause.PROJECTILE)
                     fp.getStats().increaseArrowsHit();
-                if (event.getEntity() instanceof Player && ((Player) event.getEntity()).getHealth() - event.getFinalDamage() <= 0)
+                if (event.getEntity() instanceof Player && ((Player) event.getEntity()).getHealth() - event.getFinalDamage() <= 0) {
                     fp.getStats().increaseKills();
+                    fp.getPersonalListener().refreshEasterEgg();
+                }
             }
         }
     }

@@ -77,8 +77,9 @@ public class GPlayer {
     private Compass compass;
 
     private PlayerStats stats;
-
     private GPermissions personalPermissions;
+
+    private GListener.PersonalListener personalListener;
 
     public GPlayer(@Nullable String name, @Nullable PlayerStats stats, @Nullable GPermissions personalPermissions) {
         this.name = name;
@@ -89,6 +90,8 @@ public class GPlayer {
 
         this.stats = stats == null ? new PlayerStats() : stats;
         this.personalPermissions = personalPermissions == null ? new GPermissions(GPermissions.Definition.DEFAULT) : personalPermissions;
+
+        this.personalListener = new GListener.PersonalListener(this);
     }
 
     public GPlayer(String name, UUID lastUuid, String teamId, Compass compass, PlayerStats stats, GPermissions personalPermissions) {
@@ -305,5 +308,14 @@ public class GPlayer {
                 saveToConfig(getManager().getId(), true);
             getConfig(getManager().getId()).load().setPermissions(personalPermissions, true).save();
         }
+    }
+
+    public GListener.PersonalListener getPersonalListener() {
+        return personalListener;
+    }
+
+    public void setPersonalListener(GListener.PersonalListener personalListener) {
+        this.personalListener = personalListener;
+        this.personalListener.setGPlayer(this);
     }
 }

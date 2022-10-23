@@ -189,7 +189,7 @@ public class Config {
         public static final String STATE = "state", DAY = "day", WEATHER = "weather", TIME = "time",
                 LINKED_TO_SUN = "linked-to-sun", OPTIONS = "options", OPTION_NAME = "options.%s.name",
                 OPTION_ACTIVATION = "options.%s.day", OPTION_ACTIVATED = "options.%s.activated",
-                LISTENER_NAME = "listener.objective-name", LISTENER_TIMEOUT = "listener.saving-timeout",
+                LISTENER_TIMEOUT = "listener.saving-timeout",
                 PORTALS = "portals", PORTAL_NAME = "portals.%s.name", PORTAL_OPENED = "portals.%s.opened",
                 PORTAL_COOLDOWN = "portals.%s.cooldown", PORTAL_OPENED_MATERIAL = "portals.%s.materials.opened",
                 PORTAL_CLOSED_MATERIAL = "portals.%s.materials.closed",
@@ -294,15 +294,6 @@ public class Config {
 
         public Manager setOptionActivated(String option, boolean activated, boolean force) {
             super.set(String.format(OPTION_ACTIVATED, option), activated, force);
-            return this;
-        }
-
-        public String getListenerName() {
-            return super.getStr(LISTENER_NAME);
-        }
-
-        public Manager setListenerName(String name, boolean force) {
-            super.set(LISTENER_NAME, name, force);
             return this;
         }
 

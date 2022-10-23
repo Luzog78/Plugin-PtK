@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.events;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.game.GListener;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import org.bukkit.Bukkit;
@@ -11,6 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static fr.luzog.pl.ptk.utils.SpecialChars.*;
@@ -35,6 +37,7 @@ public class PlayerJoinQuitHandler implements Listener {
                 gPlayer.setName(e.getPlayer().getName(), true);
             if(gPlayer.getTeam() != null)
                 gPlayer.getTeam().updatePlayers();
+            gPlayer.getPersonalListener().refreshEasterEgg();
         }
 
         String displayName = gPlayers.isEmpty() ? e.getPlayer().getName()

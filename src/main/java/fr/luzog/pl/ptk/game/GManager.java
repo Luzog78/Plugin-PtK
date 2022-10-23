@@ -59,7 +59,6 @@ public class GManager {
                             }
                         }
                 });
-                Utils.tryTo(printStackTrace, () -> manager.getListener().setScoreName(Objects.requireNonNull(config.getListenerName())));
                 Utils.tryTo(printStackTrace, () -> manager.getListener().setSavingTimeOut(config.getListenerSavingTimeout()));
                 Utils.tryTo(printStackTrace, () -> {
                     for (String p : config.getPortals())
@@ -228,7 +227,6 @@ public class GManager {
                 .setOptionActivation("end", options.getEnd().getActivationDay(), !soft)
                 .setOptionActivated("end", options.getEnd().isActivated(), !soft)
 
-                .setListenerName(listener.getScoreName(), !soft)
                 .setListenerSavingTimeout(listener.getSavingTimeOut(), !soft)
 
                 .setPortalName("nether", nether.getName(), !soft)
@@ -900,7 +898,6 @@ public class GManager {
         getConfig()
                 .load()
 
-                .setListenerName(listener.getScoreName(), true)
                 .setListenerSavingTimeout(listener.getSavingTimeOut(), true)
 
                 .save();

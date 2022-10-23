@@ -54,6 +54,7 @@ public class EntityDamageHandler implements Listener {
 
             if (entity.getHealth() - e.getFinalDamage() <= 0) {
                 fp.getStats().increaseDeaths();
+                fp.getPersonalListener().refreshEasterEgg();
                 Broadcast.mess(fp.getDisplayName() + "§c est mort.");
                 e.setCancelled(true);
                 p.setHealth(p.getMaxHealth());

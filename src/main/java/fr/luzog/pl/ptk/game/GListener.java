@@ -11,11 +11,13 @@ import net.minecraft.server.v1_8_R3.ChatComponentText;
 import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerListHeaderFooter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
 
@@ -63,23 +65,12 @@ public class GListener {
     private long savingTimeOut;
     private long savingCoolDown;
 
-    private Objective objective;
-    private Map<String, Integer> l; // ScoreBoard List
-    private Map<Integer, String> al; // Ancian ScoreBoard List -> to up to date
-    private String scoreName = "Game" /* = "§6§l§n-=[ §1F§aa§3l§cl§5e§en §7K§6i§dn§4g§bd§2o§9m §8I §6]=-" */;
-
     public GListener(long savingTimeOut) {
-
         this.savingTimeOut = savingTimeOut; // 60 * 5; // 5 min in sec
         savingCoolDown = savingTimeOut;
-        l = new HashMap<>();
-        al = new HashMap<>();
     }
 
     public void scheduleTask() {
-        objective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("go"
-                + UUID.randomUUID().toString().substring(0, 8), "dummy");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         taskID = Bukkit.getScheduler().scheduleAsyncRepeatingTask(Main.instance, new BukkitRunnable() {
 
             final long delayer = 4L; // Each at 1/4 sec so : original = time / (1/4) == time * 4
@@ -93,8 +84,8 @@ public class GListener {
                 } else
                     countDown--;
 
-                refreshScoreName();
-                objective.setDisplayName(scoreName);
+                manager.getPlayers().stream().map(GPlayer::getPersonalListener)
+                        .filter(Objects::nonNull).forEach(PersonalListener::refreshScoreName);
 
                 if (manager.getState() == GManager.State.RUNNING) {
                     manager.increaseTime(5, false);
@@ -108,6 +99,8 @@ public class GListener {
                         for(GPickableLocks.Lock lock : manager.getPickableLocks().getPickableLocks())
                             if(lock.getLevel() == manager.getDay())
                                 lock.broadcast();
+                        manager.getPlayers().stream().map(GPlayer::getPersonalListener)
+                                .filter(Objects::nonNull).forEach(PersonalListener::refreshEasterEgg);
                     } else if (manager.getTime() >= 24000 - 100 && manager.getTime() % 20 == 0)
                         Broadcast.log("Nouvelle journée dans !" + ((24000 - manager.getTime()) / 20) + " !secondes§r...");
                     else if (manager.getTime() == 24000 - 200)
@@ -125,10 +118,12 @@ public class GListener {
                 } else
                     manager.increaseTime(0, false);
 
-                setScoreLines();
-                updateScoreLines();
-
                 manager.getPlayers().forEach(gPlayer -> {
+                    if (gPlayer.getPersonalListener() != null) {
+                        gPlayer.getPersonalListener().setScoreLines();
+                        gPlayer.getPersonalListener().updateScoreLines();
+                    }
+
                     Player p = gPlayer.getPlayer();
                     if (p == null)
                         return;
@@ -148,8 +143,8 @@ public class GListener {
 
                     p.setPlayerListName(displayName);
 
-                    if (!p.getScoreboard().equals(Bukkit.getScoreboardManager().getMainScoreboard()))
-                        p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                    if (!p.getScoreboard().equals(gPlayer.getPersonalListener().getScoreboard()))
+                        p.setScoreboard(gPlayer.getPersonalListener().getScoreboard());
                     ((CraftPlayer) p).getHandle().playerConnection.sendPacket(getTHF(p));
 
 //                  String directionalArrow = "§6" + new DecimalFormat("0.0").format(p.getLocation().distance(new Location(p.getWorld(), -256.5, p.getLocation().getY(), -143.5)))
@@ -184,8 +179,6 @@ public class GListener {
 
     public void cancelTask() {
         try {
-            l.clear();
-            al.clear();
             Bukkit.getScoreboardManager().getMainScoreboard().getObjectives().forEach(o -> {
                 if (o.getName().startsWith("go"))
                     o.unregister();
@@ -194,52 +187,6 @@ public class GListener {
         } catch (Exception e) {
             Broadcast.err("!Error : Cannot Cancelling Auto Task. (" + e + ")");
         }
-    }
-
-    public void refreshScoreName() {
-        scoreName = Main.SEASON.substring(0, Math.min(Main.SEASON.length(), 20));
-        int index = (int) (manager.getTime() / 5 % scoreName.length());
-        scoreName = "§6§l" + scoreName.substring(0, index) + "§f§l" + scoreName.charAt(index) + "§6§l" + scoreName.substring(index + 1);
-    }
-
-    private String ca(List<String> l) { // ca for charAt
-        Random r = new Random();
-        int i = r.nextInt(l.size());
-        String s = l.get(i) + "";
-        l.remove(i);
-        return s;
-    }
-
-    public void setScoreLines() {
-        l.clear();
-        l.put("§r", /* ...................................................................................................... */ 12);
-        l.put("§8Jour : §3" + manager.getDay(), /* .......................................................................... */ 11);
-        l.put("§8Heure : §3" + manager.getFormattedTime(), /* ............................................................... */ 10);
-        l.put("§c----------", /* ............................................................................................. */ 9);
-        for (int i = 0; i < 4; i++) {
-            GOptions.GOption o = new GOptions.GOption[]{manager.getOptions().getPvp(), manager.getOptions().getNether(),
-                    manager.getOptions().getAssaults(), manager.getOptions().getEnd()}[i];
-            l.put("§a" + o.getName() + "§a : " + (o.isActivated() ? y : n + "§7§O (J" + o.getActivationDay() + ")"), /* . */ -i + 8);
-        }
-        l.put("§c---------- ", /* ............................................................................................ */ 4);
-        l.put("§9Niveau : §f" + GPickableLocks.getPickingLevel(manager), /* ................................................. */ 3);
-        l.put("§9Coffres : §c" + manager.getPickableLocks().getPickableLocks().stream().filter(l ->
-                l.isPickable() && !l.isPicked() && l.getLevel() <= GPickableLocks.getPickingLevel(manager)).count(), /* ..... */ 2);
-        l.put("§c----------  ", /* ........................................................................................... */ 1);
-        l.put("§d        " + SpecialChars.MISC_3, /* ......................................................................... */ 0);
-    }
-
-    public void updateScoreLines() {
-        // TODO, CAN THROWS ConcurrentModificationException !!! (at "l.keySet().forEach(s -> {" line)
-        l.keySet().forEach(s -> {
-            if (!al.containsValue(s) || (al.containsKey(l.get(s)) && !al.get(l.get(s)).equals(s))) {
-                if (al.containsKey(l.get(s)))
-                    objective.getScoreboard().resetScores(al.get(l.get(s)));
-                objective.getScore(s).setScore(l.get(s));
-            }
-        });
-        al.clear();
-        l.keySet().forEach(s -> al.put(l.get(s), s));
     }
 
     public PacketPlayOutPlayerListHeaderFooter getTHF(Player p) {
@@ -462,35 +409,147 @@ public class GListener {
         this.savingCoolDown = savingCoolDown;
     }
 
-    public Objective getObjective() {
-        return objective;
-    }
+    public static class PersonalListener {
 
-    public void setObjective(Objective objective) {
-        this.objective = objective;
-    }
+        private GPlayer gPlayer;
+        private Scoreboard scoreboard;
+        private Objective objective;
+        private Map<String, Integer> l; // ScoreBoard List
+        private Map<Integer, String> al; // Ancian ScoreBoard List -> to up to date
+        private String scoreName = "Game";
+        private ChatColor easterEgg = ChatColor.YELLOW;
 
-    public Map<String, Integer> getL() {
-        return l;
-    }
+        public PersonalListener(GPlayer gPlayer) {
+            setGPlayer(gPlayer);
+            scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+            objective = scoreboard.registerNewObjective("Game", "dummy");
+            objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+            l = new HashMap<>();
+            al = new HashMap<>();
+            refreshEasterEgg();
+        }
 
-    public void setL(Map<String, Integer> l) {
-        this.l = l;
-    }
+        public void reset() {
+            l.clear();
+            al.clear();
+        }
 
-    public Map<Integer, String> getAl() {
-        return al;
-    }
+        public void refreshScoreName() {
+            scoreName = Main.SEASON.substring(0, Math.min(Main.SEASON.length(), 20));
+            int index = (int) (gPlayer.getManager().getTime() / 5 % scoreName.length());
+            scoreName = "§6§l" + scoreName.substring(0, index) + "§f§l" + scoreName.charAt(index) + "§6§l" + scoreName.substring(index + 1);
 
-    public void setAl(Map<Integer, String> al) {
-        this.al = al;
-    }
+            objective.setDisplayName(scoreName);
+        }
 
-    public String getScoreName() {
-        return scoreName;
-    }
+        public void refreshEasterEgg() {
+            ChatColor[] colors = {ChatColor.WHITE,
+                    ChatColor.AQUA, ChatColor.DARK_AQUA,
+                    ChatColor.BLUE, ChatColor.DARK_BLUE,
+                    ChatColor.GREEN, ChatColor.DARK_GREEN,
+                    ChatColor.YELLOW, ChatColor.GOLD,
+                    ChatColor.RED, ChatColor.DARK_RED,
+                    ChatColor.LIGHT_PURPLE, ChatColor.DARK_PURPLE};
+            easterEgg = colors[new Random().nextInt(colors.length)];
+        }
 
-    public void setScoreName(String scoreName) {
-        this.scoreName = scoreName;
+        private String ca(List<String> l) { // ca for charAt
+            Random r = new Random();
+            int i = r.nextInt(l.size());
+            String s = l.get(i) + "";
+            l.remove(i);
+            return s;
+        }
+
+        public void setScoreLines() {
+            // §c----------
+            l.clear();
+            l.put("§r", 14);
+            l.put("§8Jour : §3" + gPlayer.getManager().getDay(), 13);
+            l.put("§8Heure : §3" + gPlayer.getManager().getFormattedTime(), 12);
+            l.put(" ", 11);
+            for (int i = 0; i < 4; i++) {
+                GOptions.GOption o = new GOptions.GOption[]{gPlayer.getManager().getOptions().getPvp(), gPlayer.getManager().getOptions().getNether(),
+                        gPlayer.getManager().getOptions().getAssaults(), gPlayer.getManager().getOptions().getEnd()}[i];
+                l.put("§a" + o.getName() + "§a : " + (o.isActivated() ? y : n + "§7§O (J" + o.getActivationDay() + ")"), -i + 10);
+            }
+            l.put("  ", 6);
+            l.put("§d" + SpecialChars.SWORDS + "§5 Kills : §d" + gPlayer.getStats().getKills(), 5);
+            l.put("§d" + SpecialChars.DANGER_DEATH + "§5 Deaths : §d" + gPlayer.getStats().getDeaths(), 4);
+            l.put("   ", 3);
+            l.put("§9Coffres : §c" + gPlayer.getManager().getPickableLocks().getPickableLocks().stream().filter(l ->
+                    l.isPickable() && !l.isPicked() && l.getLevel() <= GPickableLocks.getPickingLevel(gPlayer.getManager())).count(), 2);
+            l.put("    ", 1);
+            l.put("        " + easterEgg + SpecialChars.MISC_3, 0);
+        }
+
+        public void updateScoreLines() {
+            // TODO, CAN THROWS ConcurrentModificationException !!! (at "l.keySet().forEach(s -> {" line)
+            l.keySet().forEach(s -> {
+                if (!al.containsValue(s) || (al.containsKey(l.get(s)) && !al.get(l.get(s)).equals(s))) {
+                    if (al.containsKey(l.get(s)))
+                        objective.getScoreboard().resetScores(al.get(l.get(s)));
+                    objective.getScore(s).setScore(l.get(s));
+                }
+            });
+            al.clear();
+            l.keySet().forEach(s -> al.put(l.get(s), s));
+        }
+
+        public GPlayer getGPlayer() {
+            return gPlayer;
+        }
+
+        public void setGPlayer(GPlayer gPlayer) {
+            this.gPlayer = gPlayer;
+        }
+
+        public Scoreboard getScoreboard() {
+            return scoreboard;
+        }
+
+        public void setScoreboard(Scoreboard scoreboard) {
+            this.scoreboard = scoreboard;
+        }
+
+        public Objective getObjective() {
+            return objective;
+        }
+
+        public void setObjective(Objective objective) {
+            this.objective = objective;
+        }
+
+        public Map<String, Integer> getL() {
+            return l;
+        }
+
+        public void setL(Map<String, Integer> l) {
+            this.l = l;
+        }
+
+        public Map<Integer, String> getAl() {
+            return al;
+        }
+
+        public void setAl(Map<Integer, String> al) {
+            this.al = al;
+        }
+
+        public String getScoreName() {
+            return scoreName;
+        }
+
+        public void setScoreName(String scoreName) {
+            this.scoreName = scoreName;
+        }
+
+        public ChatColor getEasterEgg() {
+            return easterEgg;
+        }
+
+        public void setEasterEgg(ChatColor easterEgg) {
+            this.easterEgg = easterEgg;
+        }
     }
 }
