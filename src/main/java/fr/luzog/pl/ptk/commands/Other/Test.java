@@ -1,6 +1,6 @@
 package fr.luzog.pl.ptk.commands.Other;
 
-import fr.luzog.pl.fkx.utils.CmdUtils;
+import fr.luzog.pl.ptk.utils.CmdUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

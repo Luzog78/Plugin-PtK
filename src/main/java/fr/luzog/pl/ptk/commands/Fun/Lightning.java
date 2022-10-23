@@ -1,9 +1,9 @@
 package fr.luzog.pl.ptk.commands.Fun;
 
-import fr.luzog.pl.fkx.Main;
-import fr.luzog.pl.fkx.utils.CmdUtils;
-import fr.luzog.pl.fkx.utils.CustomNBT;
-import fr.luzog.pl.fkx.utils.Utils;
+import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.utils.CmdUtils;
+import fr.luzog.pl.ptk.utils.CustomNBT;
+import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

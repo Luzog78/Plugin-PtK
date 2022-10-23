@@ -1,6 +1,6 @@
 package fr.luzog.pl.ptk.utils;
 
-import fr.luzog.pl.fkx.Main;
+import fr.luzog.pl.ptk.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.joptsimple.internal.Strings;
@@ -44,7 +44,7 @@ public class Broadcast {
     }
 
     /**
-     * <strong>Success (FK_PREFIX)</strong>
+     * <strong>Success (GAME_PREFIX)</strong>
      * <br>
      * <br><strong>&nbsp; - Base Color :</strong> GREEN
      * <br><strong>&nbsp; - Strong Color :</strong> RED
@@ -55,7 +55,7 @@ public class Broadcast {
     }
 
     /**
-     * <strong>Error (FK_PREFIX)</strong>
+     * <strong>Error (GAME_PREFIX)</strong>
      * <br>
      * <br><strong>&nbsp; - Base Color :</strong> RED
      * <br><strong>&nbsp; - Strong Color :</strong> DARK_RED
@@ -66,7 +66,7 @@ public class Broadcast {
     }
 
     /**
-     * <strong>FK Logement (FK_PREFIX)</strong>
+     * <strong>Logment (GAME_PREFIX)</strong>
      * <br>
      * <br><strong>&nbsp; - Base Color :</strong> GOLD
      * <br><strong>&nbsp; - Strong Color :</strong> RED

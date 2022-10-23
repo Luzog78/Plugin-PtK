@@ -1,7 +1,7 @@
 package fr.luzog.pl.ptk.commands.Location;
 
-import fr.luzog.pl.fkx.Main;
-import fr.luzog.pl.fkx.utils.CmdUtils;
+import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.utils.CmdUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

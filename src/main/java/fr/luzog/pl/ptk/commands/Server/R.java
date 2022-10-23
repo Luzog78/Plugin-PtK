@@ -1,6 +1,6 @@
 package fr.luzog.pl.ptk.commands.Server;
 
-import fr.luzog.pl.fkx.Main;
+import fr.luzog.pl.ptk.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

@@ -1,6 +1,6 @@
 package fr.luzog.pl.ptk.utils;
 
-import fr.luzog.pl.fkx.events.Events;
+import fr.luzog.pl.ptk.events.Events;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;

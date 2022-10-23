@@ -1,7 +1,7 @@
 package fr.luzog.pl.ptk.commands.Fun;
 
-import fr.luzog.pl.fkx.utils.CmdUtils;
-import fr.luzog.pl.fkx.utils.SpecialChars;
+import fr.luzog.pl.ptk.utils.CmdUtils;
+import fr.luzog.pl.ptk.utils.SpecialChars;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
