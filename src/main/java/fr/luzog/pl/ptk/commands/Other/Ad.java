@@ -1,5 +1,6 @@
 package fr.luzog.pl.ptk.commands.Other;
 
+import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.guis.GuiAd;
 import fr.luzog.pl.ptk.utils.CmdUtils;
@@ -331,7 +332,7 @@ public class Ad implements CommandExecutor, TabCompleter, Listener {
                     String arg = args[1].startsWith("-") || args[1].startsWith("+") ? args[1].substring(1) : args[1];
                     if (sender instanceof Player)
                         u.getPlayer().openInventory(GuiAd.getAdsInventory(GuiAd.SortType.valueOf(arg.toUpperCase()),
-                                args[1].startsWith("-"), GManager.getCurrentGame() == null ? null : "fk",
+                                args[1].startsWith("-"), GManager.getCurrentGame() == null ? null : Main.CMD,
                                 "ad page", Integer.parseInt(args[2])));
                     else
                         u.err(CmdUtils.err_not_player);

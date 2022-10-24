@@ -164,10 +164,8 @@ public class GManager {
                                 Utils.tryTo(printStackTrace, () -> team.setRadius(tc.getRadius(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setEliminated(tc.isEliminated(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setEliminators(tc.getEliminators(), false));
-                                Utils.tryTo(printStackTrace, () -> team.setDefaultEliminationCooldown(tc.getTimeout(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setOldPlayers(tc.getOldPlayers(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setSpawn(Objects.requireNonNull(tc.getSpawn()), false));
-                                Utils.tryTo(printStackTrace, () -> team.setPlunderLoc(Objects.requireNonNull(tc.getPlunderLoc()), false));
                                 Utils.tryTo(printStackTrace, () -> team.setPermissions(Objects.requireNonNull(tc.getPermissions()), false));
 
                                 if (fff.getName().equalsIgnoreCase(GTeam.GODS_FILE))
@@ -573,7 +571,6 @@ public class GManager {
                     });
                     setPriority(new GPermissions(GPermissions.Definition.DEFAULT), true);
                     setState(State.RUNNING, true);
-                    GTeam.killAllArmorStands();
                 });
     }
 
@@ -676,14 +673,15 @@ public class GManager {
 
     public void checkActivations(boolean force) {
         for (GOptions.GOption opt : options.getOptions())
-            if (force) {
-                if (day >= opt.getActivationDay()) {
-                    if (!opt.isActivated())
-                        opt.activate(true);
-                } else if (opt.isActivated())
-                    opt.deactivate(true);
-            } else if (day == opt.getActivationDay())
-                opt.activate(true);
+            if (opt.getActivationDay() >= 0)
+                if (force) {
+                    if (day >= opt.getActivationDay()) {
+                        if (!opt.isActivated())
+                            opt.activate(true);
+                    } else if (opt.isActivated())
+                        opt.deactivate(true);
+                } else if (day == opt.getActivationDay())
+                    opt.activate(true);
     }
 
     public GZone getZone(Location loc) {

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'fr.luzog.pl'
-version 'alpha1.1'
+version 'alpha1.2'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -26,3 +26,4 @@ test {
 }
 
 jar.destinationDir = new File("Build - Jar Files")
+//jar.destinationDir = new File("C:/Users/Luzog/Servers/Minecraft Servers/1.8.8 - PtK Plugin/plugins")

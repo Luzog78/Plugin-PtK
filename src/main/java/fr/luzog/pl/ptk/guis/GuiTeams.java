@@ -54,7 +54,6 @@ public class GuiTeams {
                         "  §6Nom : §f" + team.getColor() + team.getName(),
                         "  §6Préfixe : §f§7'" + team.getColor() + team.getPrefix() + "§7'",
                         "  §6Couleur : §f" + team.getColor() + team.getColor().name(),
-                        "  §6Délai d'élimination : §7" + (team.getDefaultEliminationCooldown() / 20.0) + "s",
                         "  §6Éliminée : §f" + (team.isEliminated() ? "§2" + SpecialChars.YES + "Oui" : "§4" + SpecialChars.NO + "Non"),
                         "  §8  > Éliminateurs : §6" + (team.getEliminators() == null ? "§cnull"
                                 : GManager.getCurrentGame().getTeam(team.getEliminators()) == null ? team.getEliminators()
@@ -306,36 +305,6 @@ public class GuiTeams {
         inv.setItem(Utils.posOf(7, 2), GuiPerm.getPermsItem(team.getPermissions(), Material.IRON_SWORD,
                 "§fPermissions", "Clic pour voir les permissions\n \n§7Commande:\n§7/" + Main.CMD + " perm team "
                         + team.getId(), Main.CMD + " perm team " + team.getId()));
-        inv.setItem(Utils.posOf(6, 2), Items.builder(Material.WATCH)
-                .setName("§6Délai d'élimination : §7" + (team.getDefaultEliminationCooldown() / 20.0) + "s")
-                .setLore(
-                        "§8" + Guis.loreSeparator,
-                        (!(team.getId().equals(GTeam.GODS_ID) || team.getId().equals(GTeam.SPECS_ID)) ?
-                                "§7Clic Gauche pour §2 + 1s"
-                                        + "\n§7  (Shift pour §2 + 5s§7)"
-                                        + "\n§7Clic Droit pour §4 - 1s"
-                                        + "\n§7  (Shift pour §4 - 5s§7)"
-                                        + "\n§7Clic Molette pour §fdéfinir"
-                                : " \n  §cCette équipe n'est pas éliminable...\n \n§8" + Guis.loreSeparator),
-                        " ",
-                        "§7Commande :",
-                        "§7/" + Main.CMD + " teams " + team.getId() + " options --e §f<delay>"
-                )
-                .setCantClickOn(true)
-                .setLeftRightShiftCommandOnClick(
-                        Main.CMD  + " teams " + team.getId() + " options --e " + ((team
-                                .getDefaultEliminationCooldown() / 20.0) + 1) + "\n" + refresh,
-                        Main.CMD + " teams " + team.getId() + " options --e " + ((team
-                                .getDefaultEliminationCooldown() / 20.0) + 5) + "\n" + refresh,
-                        Main.CMD + " teams " + team.getId() + " options --e " + ((team
-                                .getDefaultEliminationCooldown() / 20.0) - 1 < 0 ? 0 : (team
-                                .getDefaultEliminationCooldown() / 20.0) - 1) + "\n" + refresh,
-                        Main.CMD + " teams " + team.getId() + " options --e " + ((team
-                                .getDefaultEliminationCooldown() / 20.0) - 5 < 0 ? 0 : (team
-                                .getDefaultEliminationCooldown() / 20.0) - 5) + "\n" + refresh
-                )
-                .setMiddleCommandOnClick("input 1 " + Main.CMD + " teams " + team.getId() + " options --e %s%n" + refresh)
-                .build());
         inv.setItem(Utils.posOf(6, 3), Items.builder(Material.BRICK)
                 .setName("§6Constructions")
                 .setLore(
@@ -358,29 +327,10 @@ public class GuiTeams {
                         "input 2 " + Main.CMD + " teams " + team.getId() + " wall %s %s%n" + refresh
                 )
                 .build());
-        inv.setItem(Utils.posOf(6, 4), Items.builder(Material.ARMOR_STAND)
-                .setName("§6ArmorStand")
-                .setLore(
-                        "§8" + Guis.loreSeparator,
-                        (!(team.getId().equals(GTeam.GODS_ID) || team.getId().equals(GTeam.SPECS_ID)) ?
-                                "§7Clic Gauche pour le §2montrer"
-                                        + "\n§7Clic Droit pour le §4cacher"
-                                : " \n  §cCette équipe n'a pas d'armor stand...\n \n§8" + Guis.loreSeparator),
-                        " ",
-                        "§7Commande :",
-                        "§7/" + Main.CMD + " teams " + team.getId() + " armorStand §8(§2show §8| §4hide§8)"
-                )
-                .setCantClickOn(true)
-                .setLeftRightCommandOnClick(
-                        Main.CMD + " teams " + team.getId() + " armorStand show\n" + refresh,
-                        Main.CMD + " teams " + team.getId() + " armorStand hide\n" + refresh
-                )
-                .build());
         inv.setItem(Utils.posOf(7, 4), Items.builder(Items.red())
                 .setName("§cStatus :  §f" + (team.getId().equals(GTeam.GODS_ID) || team.getId().equals(GTeam.SPECS_ID) ?
                         "§7Ne compte pas"
                         : team.isEliminated() ? "§4" + SpecialChars.NO + "  Éliminée"
-                        : team.isEliminating() ? "§b" + SpecialChars.FLAG_FILLED + "  En cours d'élimination"
                         : "§2" + SpecialChars.YES + "  Participante"))
                 .setLore(
                         "§8" + Guis.loreSeparator,

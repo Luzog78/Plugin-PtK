@@ -21,18 +21,6 @@ public class EntityDamageByEntityHandler implements Listener {
             Player p = (Player) event.getDamager();
 
             GPlayer fp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
-            /*
-             *  FKTeam t;
-             *  if (FKManager.getCurrentGame() != null && event.getEntity().hasMetadata(FKTeam.GUARDIAN_TAG)
-             *          && fp != null && fp.getTeam() != null && (t = FKManager.getCurrentGame().getTeam(event.getEntity()
-             *          .getMetadata(FKTeam.GUARDIAN_TAG).get(0).asString())) != null
-             *          && (fp.getTeam().getId().equals(t.getId()) || fp.getTeam().getId().equals(FKTeam.GODS_ID))
-             *          && p.isSneaking()) {
-             *      t.setChestsRoom(t.getSpawn(), true, true);
-             *      p.sendMessage("§aVous avez réinitialisé la position de votre gardien.");
-             *      return;
-             *  }
-             */
 
             if (event.getEntity() instanceof Player) {
                 Player e = (Player) event.getEntity();
@@ -49,11 +37,8 @@ public class EntityDamageByEntityHandler implements Listener {
                     return;
                 }
             } else {
-                if ((event.getEntity().hasMetadata(GTeam.PLUNDER_STAND_TAG) && ((fp == null && !p.isOp())
-                        || (fp != null && (fp.getTeam() == null || !fp.getTeam().getId().equals(GTeam.GODS_ID)))))
-                        || (!event.getEntity().hasMetadata(GTeam.PLUNDER_STAND_TAG) && ((fp == null && !p.isOp())
-                        || (fp != null && !fp.hasPermission(GPermissions.Type.MOBS,
-                        event.getEntity().getLocation()))))) {
+                if ((fp == null && !p.isOp()) || (fp != null && !fp.hasPermission(GPermissions.Type.MOBS,
+                        event.getEntity().getLocation()))) {
                     event.setCancelled(true);
                     return;
                 }

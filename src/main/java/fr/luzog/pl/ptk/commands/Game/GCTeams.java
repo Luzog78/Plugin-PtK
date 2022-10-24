@@ -17,10 +17,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GCTeams {
-    public static final String syntaxe = "/" + Main.CMD + " teams [help | list | create <id> [<options>] | (eliminate | reintroduce | delete) <id> | clearEntities | page <page> | <id> ...]",
+    public static final String syntaxe = "/" + Main.CMD + " teams [help | list | create <id> [<options>] | (eliminate | reintroduce | delete) <id> | page <page> | <id> ...]",
             syntaxe_create = "/" + Main.CMD + " teams create <id> [<options>]",
-            syntaxe_team = "/" + Main.CMD + " teams <id> [help | info | list | armorStand (hide | show)]"
-                    + "\n§r/" + Main.CMD + " teams <id> [colorGui | playersGui [<page>] | (add | remove) <player>]"
+            syntaxe_team = "/" + Main.CMD + " teams <id> [help | info | list | colorGui]"
+                    + "\n§r/" + Main.CMD + " teams <id> [playersGui [<page>] | (add | remove) <player>]"
                     + "\n§r/" + Main.CMD + " teams <id> [altar | wall [<height>] <material> | options [<args...>]]",
             syntaxe_team_options = "/" + Main.CMD + " teams <id>  options [help | list | <options>]",
             syntaxe_opts = "Options:"
@@ -28,9 +28,7 @@ public class GCTeams {
                     + "\n§r  > --p <prefix>"
                     + "\n§r  > --c <color>"
                     + "\n§r  > --r <radius>"
-                    + "\n§r  > --e <eliminationDelay>"
-                    + "\n§r  > --s <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Spawn§r"
-                    /*+ "\n  > --g <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Guardian§r"*/;
+                    + "\n§r  > --s <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Spawn§r";
 
     public static boolean onCommand(CommandSender sender, Command command, String msg, String[] args) {
         CmdUtils u = new CmdUtils(sender, command, msg, args, syntaxe);
@@ -58,8 +56,6 @@ public class GCTeams {
                 }
             else
                 u.err(CmdUtils.err_not_player);
-        } else if (args[1].equalsIgnoreCase("clearEntities")) {
-            u.succ("Vous venez de supprimer §c" + GTeam.killAllArmorStands() + "§r entités !");
         } else if (args[1].equalsIgnoreCase("create")) {
             u.setSyntaxe(syntaxe_create + "\n" + syntaxe_opts);
             if (args.length < 3)
@@ -85,7 +81,7 @@ public class GCTeams {
             else if (GManager.getCurrentGame().getTeam(args[2]).isEliminated())
                 u.err("Cette équipe est déjà éliminée.");
             else {
-                GManager.getCurrentGame().getTeam(args[2]).eliminate(true,
+                GManager.getCurrentGame().getTeam(args[2]).eliminate(GTeam.GODS_ID, true,
                         GManager.getCurrentGame().getState() == GManager.State.RUNNING
                                 || GManager.getCurrentGame().getState() == GManager.State.PAUSED, true);
             }
@@ -220,81 +216,6 @@ public class GCTeams {
                         u.err(CmdUtils.err_number_format + " (" + args[3] + ")");
                     }
 
-            }/* else if (args[2].equalsIgnoreCase("chestRoom")) {
-                if (t.getId().equals(GTeam.GODS_ID) || t.getId().equals(GTeam.SPECS_ID))
-                    u.err("Cette équipe n'a pas de salle des coffres.");
-                else if (args.length == 3)
-                    u.err(CmdUtils.err_missing_arg.replace("%ARG%", "<x> <y> <z>"));
-                else if (args.length == 4)
-                    u.err(CmdUtils.err_missing_arg.replace("%ARG%", "<y> <z>"));
-                else if (args.length == 5)
-                    u.err(CmdUtils.err_missing_arg.replace("%ARG%", "<z>"));
-                else {
-                    Double x = null, y = null, z = null;
-                    Float yw = null, pi = null;
-                    World w = Main.world;
-                    boolean orientation = args.length >= 8;
-
-                    try {
-                        x = Double.parseDouble(args[3]);
-                    } catch (NumberFormatException ignored) {
-                    }
-                    try {
-                        y = Double.parseDouble(args[4]);
-                    } catch (NumberFormatException ignored) {
-                    }
-                    try {
-                        z = Double.parseDouble(args[5]);
-                    } catch (NumberFormatException ignored) {
-                    }
-                    if (orientation) {
-                        try {
-                            yw = Float.parseFloat(args[6]);
-                        } catch (NumberFormatException ignored) {
-                        }
-                        try {
-                            pi = Float.parseFloat(args[7]);
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                    if (args.length >= (orientation ? 9 : 7)) {
-                        w = Bukkit.getWorld(args[orientation ? 8 : 6]);
-                    }
-
-                    List<String> err = new ArrayList<>();
-                    if (x == null)
-                        err.add("X");
-                    if (y == null)
-                        err.add("Y");
-                    if (z == null)
-                        err.add("Z");
-                    if (orientation && yw == null)
-                        err.add("Yaw");
-                    if (orientation && pi == null)
-                        err.add("Pitch");
-                    if (w == null)
-                        err.add("World");
-
-                    if (err.size() > 0) {
-                        u.err("Erreur avec le(s) paramètre(s) : " + String.join(", ", err) + ".");
-                    } else {
-                        Location loc = orientation ? new Location(w, x, y, z, yw, pi) : new Location(w, x, y, z);
-                        t.setChestsRoom(loc, true, true);
-                        u.succ("Position de la salle des coffres mise à jour en §f"
-                                + Utils.locToString(loc, true, orientation, true));
-                    }
-                }
-            }*/ else if (args[2].equalsIgnoreCase("armorStand")) {
-                if (args.length == 3)
-                    u.err(CmdUtils.err_missing_arg.replace("%ARG%", "show | hide"));
-                else if (args[3].equalsIgnoreCase("show")) {
-                    t.updateArmorStand();
-                    u.succ("ArmorStand de l'équipe §f" + t.getColor() + t.getName() + "§r visible.");
-                } else if (args[3].equalsIgnoreCase("hide")) {
-                    t.killArmorStand();
-                    u.succ("ArmorStand de l'équipe §f" + t.getColor() + t.getName() + "§r caché.");
-                } else
-                    u.err("Argument '" + args[3] + "' invalide.");
             } else if (args[2].equalsIgnoreCase("options")) {
                 u.setSyntaxe(syntaxe_team_options + "\n" + syntaxe_opts);
                 if (args.length == 3) {
@@ -371,18 +292,6 @@ public class GCTeams {
                         u.succ(" - Rayon : §f" + t.getRadius());
                     } catch (NumberFormatException e) {
                         u.err(" - Rayon '" + handleString(arg, 2) + "' invalide.");
-                    }
-                }
-            } else if (arg.toLowerCase().equals("e") || arg.toLowerCase().startsWith("e ")) {
-                if (isEmpty)
-                    u.err(" - " + CmdUtils.err_missing_arg.replace("%ARG%", "eliminationDelay"));
-                else {
-                    try {
-                        t.setDefaultEliminationCooldown((long) (Double.parseDouble(
-                                handleString(arg, 2)) * 20), true);
-                        u.succ(" - Délai d'élimination : §7" + (t.getDefaultEliminationCooldown() / 20.0) + "s");
-                    } catch (NumberFormatException e) {
-                        u.err(" - Délai d'élimination '" + handleString(arg, 2) + "' invalide.");
                     }
                 }
             } else if (arg.toLowerCase().equals("s") || arg.toLowerCase().startsWith("s ")) {
@@ -514,7 +423,6 @@ public class GCTeams {
                 add("reintroduce");
                 add("delete");
                 add("page");
-                add("clearEntities");
                 addAll(GManager.getCurrentGame().getTeams().stream().map(GTeam::getId).collect(Collectors.toList()));
             } else {
                 if (args[1].equalsIgnoreCase("create")) {
@@ -534,7 +442,6 @@ public class GCTeams {
                         add("options");
                         add("altar");
                         add("wall");
-                        add("armorStand");
                         add("playersGui");
                         add("colorGui");
                     } else if (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("remove")) {
@@ -546,50 +453,6 @@ public class GCTeams {
                         else if (args.length == 5)
                             addAll(Arrays.stream(Material.values()).map(m -> m.name().toLowerCase())
                                     .collect(Collectors.toList()));
-                    }/* else if (args[2].equalsIgnoreCase("chestRoom")) {
-                        DecimalFormat df = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-                        Block b = sender instanceof Player ? ((Player) sender).getTargetBlock(new HashSet<>(
-                                Collections.singletonList(Material.AIR)), 7) : null;
-                        Location loc1 = sender instanceof Player ? ((Player) sender).getLocation() : null,
-                                loc2 = b != null ? Utils.normalize(b.getLocation(), false) : null;
-                        if (args.length == 4) {
-                            if (loc1 != null)
-                                add("" + df.format(loc1.getX()));
-                            if (loc2 != null)
-                                add("" + df.format(loc2.getX()));
-                            add("0.00");
-                        } else if (args.length == 5) {
-                            if (loc1 != null)
-                                add("" + df.format(loc1.getY()));
-                            if (loc2 != null)
-                                add("" + df.format(loc2.getY()));
-                            add("0.00");
-                        } else if (args.length == 6) {
-                            if (loc1 != null)
-                                add("" + df.format(loc1.getZ()));
-                            if (loc2 != null)
-                                add("" + df.format(loc2.getZ()));
-                            add("0.00");
-                        } else if (args.length == 7) {
-                            if (loc1 != null)
-                                add("" + df.format(loc1.getYaw()));
-                            if (loc2 != null)
-                                add("" + df.format(loc2.getYaw()));
-                            add("0.0");
-                        } else if (args.length == 8) {
-                            if (loc1 != null)
-                                add("" + df.format(loc1.getPitch()));
-                            if (loc2 != null)
-                                add("" + df.format(loc2.getPitch()));
-                            add("0.0");
-                        } else if (args.length == 9) {
-                            Bukkit.getWorlds().stream().map(World::getName).forEach(this::add);
-                        }
-                    }*/ else if (args[2].equalsIgnoreCase("armorStand")) {
-                        if (args.length == 4) {
-                            add("hide");
-                            add("show");
-                        }
                     } else if (args[2].equalsIgnoreCase("options")) {
                         if (args.length == 4) {
                             add("help");

@@ -542,8 +542,7 @@ public class Config {
     public static class Team extends Config {
         public static final String NAME = "name", PREFIX = "prefix", COLOR = "color", RADIUS = "radius",
                 ELIMINATED = "elimination.eliminated", ELIMINATORS = "elimination.eliminators",
-                TIMEOUT = "elimination.default-timeout", OLD_PLAYERS = "old-players",
-                SPAWN = "spawn", PLUNDER_LOC = "plunder", PERMISSIONS = "permissions";
+                OLD_PLAYERS = "old-players", SPAWN = "spawn", PERMISSIONS = "permissions";
 
         public Team(@Nonnull String path) {
             super(path, true);
@@ -597,15 +596,6 @@ public class Config {
             return this;
         }
 
-        public long getTimeout() {
-            return super.getLong(TIMEOUT);
-        }
-
-        public Team setTimeout(long timeout, boolean force) {
-            super.set(TIMEOUT, timeout, force);
-            return this;
-        }
-
         public ChatColor getColor() {
             return super.match(COLOR, ChatColor.values());
         }
@@ -639,15 +629,6 @@ public class Config {
 
         public Team setSpawn(Location spawn, boolean force) {
             super.setLoc(SPAWN, spawn, force);
-            return this;
-        }
-
-        public Location getPlunderLoc() {
-            return super.getLoc(PLUNDER_LOC);
-        }
-
-        public Team setPlunderLoc(Location plunder, boolean force) {
-            super.setLoc(PLUNDER_LOC, plunder, force);
             return this;
         }
 

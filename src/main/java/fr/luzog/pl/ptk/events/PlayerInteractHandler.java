@@ -56,31 +56,15 @@ public class PlayerInteractHandler implements Listener {
 
                 for (GTeam t : GManager.getCurrentGame().getTeams())
                     if (t.isInside(b.getLocation()))
-                        if (Objects.equals(fp.getTeamId(), t.getId())) {
-                            break;
-                        } else if (Objects.equals(fp.getTeamId(), GTeam.GODS_ID)) {
-                            if (sneak) {
-                                if (t.isEliminated())
-                                    p.sendMessage("§cÉquipe déjà en éliminée.");
-                                else if (t.isEliminating())
-                                    p.sendMessage("§cÉquipe déjà en élimination.");
-                                else
-                                    t.tryToEliminate(fp.getTeam(), l);
-                                e.setCancelled(true);
-                            }
+                        if (Objects.equals(fp.getTeamId(), GTeam.GODS_ID)
+                                || Objects.equals(fp.getTeamId(), t.getId())) {
                             break;
                         } else if (!GManager.getCurrentGame().getOptions().getAssaults().isActivated()) {
-                            p.sendMessage("§7§oVous ouvrez un coffre §6" + t.getColor() + t.getName()
+                            p.sendMessage("§7§oVous ouvrez un coffre §6" + t.getName()
                                     + "§7§o, prenez garde avant le début des assauts...");
                             break;
-                        } else if (!t.isEliminated()) {
-                            if (!sneak && fp.getTeam() != null)
-                                if (t.isEliminating())
-                                    p.sendMessage("§cÉquipe déjà en élimination.");
-                                else if (!fp.getTeam().everyoneIsNearOf(l) && !Objects.equals(fp.getTeamId(), GTeam.GODS_ID))
-                                    p.sendMessage("§cToute votre équipe n'est pas à proximité du coffre.");
-                                else
-                                    t.tryToEliminate(fp.getTeam(), l);
+                        } else {
+                            p.sendMessage("§cVous ne pouvez pas ouvrir le coffre car il appartient à l'équipe §6" + t.getName() + "§c.");
                             e.setCancelled(true);
                             return;
                         }

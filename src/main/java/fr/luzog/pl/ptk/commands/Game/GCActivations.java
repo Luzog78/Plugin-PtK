@@ -84,7 +84,8 @@ public class GCActivations {
     }
 
     public static String format(GOptions.GOption opt) {
-        return opt.getName() + "§r :  " + (opt.isActivated() ? "§2" + SpecialChars.YES : "§c" + SpecialChars.NO) + "  §7§o(Jour " + opt.getActivationDay() + ")";
+        return opt.getName() + "§r :  " + (opt.isActivated() ? "§2" + SpecialChars.YES : "§c" + SpecialChars.NO)
+                + (opt.getActivationDay() < 0 ? " §7§8(Désactivé)" : " §7§o(Jour " + opt.getActivationDay() + ")");
     }
 
     public static List<String> onTabComplete(CommandSender sender, Command command, String msg, String[] args) {

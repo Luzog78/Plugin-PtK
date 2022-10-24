@@ -55,7 +55,8 @@ public class GuiActivations {
                         "§8" + Guis.loreSeparator,
                         " ",
                         game.getOptions().getOptions().stream()
-                                .map(o -> "  §5" + o.getName() + " : " + o.getFormattedActivation() + " §7§o(Jour " + o.getActivationDay() + ")")
+                                .map(o -> "  §5" + o.getName() + " : " + o.getFormattedActivation()
+                                        + (o.getActivationDay() < 0 ? " §7§8(Désactivé)" : " §7§o(Jour " + o.getActivationDay() + ")"))
                                 .collect(Collectors.joining("\n \n")),
                         " ",
                         "§8" + Guis.loreSeparator + (lastLoreLine == null ? "" : "\n§7" + lastLoreLine)
@@ -68,7 +69,8 @@ public class GuiActivations {
     public static ItemStack getOptionItem(Material mat, GOptions.GOption opt,
                                           String lastLoreLines, String cmdLeft, String cmdRight) {
         return Items.builder(mat)
-                .setName("§5" + opt.getName() + " : " + opt.getFormattedActivation() + " §7§o(Jour " + opt.getActivationDay() + ")")
+                .setName("§5" + opt.getName() + " : " + opt.getFormattedActivation()
+                        + (opt.getActivationDay() < 0 ? " §7§8(Désactivé)" : " §7§o(Jour " + opt.getActivationDay() + ")"))
                 .setLore("§8" + Guis.loreSeparator + (lastLoreLines == null ? "" : "\n§7" + lastLoreLines))
                 .setCantClickOn(true)
                 .setLeftRightCommandOnClick(cmdLeft, cmdRight)

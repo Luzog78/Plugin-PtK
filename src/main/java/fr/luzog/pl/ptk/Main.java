@@ -23,8 +23,8 @@ import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    public static final Object VERSION = "Alpha 1.1";
-    public static final String CMD = "fk";
+    public static final Object VERSION = "Alpha 1.2";
+    public static final String CMD = "ptk";
 
     private static int sideLength = 27, centerLength;
 
@@ -47,7 +47,7 @@ public class Main extends JavaPlugin implements Listener {
         globalConfig = new Config.Globals("Globals.yml").load()
                 .setVersion(VERSION, true)
                 .setLang("fr-FR", false)
-                .setSeason("Fallen Kingdom X", false)
+                .setSeason("Protect The King", false)
                 .setIp("play.azion.fr", false)
                 .setOrga(Arrays.asList("Mathis_Bruel", "Luzog78"), false)
                 .setWorlds("world", "world_nether", "world_the_end", false)

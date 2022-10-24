@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class GTeam {
 
     public static final String GODS_ID = "gods", GODS_FILE = "Gods.yml",
-            SPECS_ID = "specs", SPECS_FILE = "Specs.yml", PLUNDER_STAND_TAG = "GamePlunderStand";
+            SPECS_ID = "specs", SPECS_FILE = "Specs.yml";
     public static double TEAM_RADIUS = 8;
 
     public void saveToConfig(String gameId, boolean soft) {
@@ -38,10 +38,8 @@ public class GTeam {
                 .setRadius(radius, true)
                 .setEliminated(isEliminated, true)
                 .setEliminators(eliminators, true)
-                .setTimeout(defaultEliminationCooldown, true)
                 .setOldPlayers(oldPlayers, true)
                 .setSpawn(spawn, true)
-                .setPlunderLoc(plunderLoc, true)
                 .setPermissions(permissions, true)
 
                 .save();
@@ -53,11 +51,10 @@ public class GTeam {
 
     private String id, name, prefix, eliminators;
     private ChatColor color;
-    private Location spawn, plunderLoc;
+    private Location spawn;
     private double radius;
     private ArrayList<String> oldPlayers;
     private boolean isEliminated;
-    private long defaultEliminationCooldown, eliminationCooldown;
 
     private Team scoreboardTeam;
 
@@ -70,15 +67,9 @@ public class GTeam {
         this.eliminators = null;
         this.color = ChatColor.WHITE;
         this.spawn = new Location(Main.world, 0, 0, 0);
-//        this.chestsRoom = new Location(Main.world, 0, 0, 0);
-//        this.guardian = null;
-//        this.armorStand = null;
-        this.plunderLoc = null;
         this.radius = 0;
         this.oldPlayers = new ArrayList<>();
         this.isEliminated = false;
-        this.defaultEliminationCooldown = 2000;
-        this.eliminationCooldown = 0;
         this.permissions = new GPermissions(GPermissions.Definition.DEFAULT);
         scoreboardTeam = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("gt" + UUID.randomUUID().toString().substring(0, 4) + ":" + id);
         updateParams();
@@ -93,32 +84,12 @@ public class GTeam {
         this.eliminators = eliminators;
         this.color = color;
         this.spawn = spawn;
-//        this.chestsRoom = chestsRoom;
-//        this.guardian = guardian;
-//        this.armorStand = armorStand;
-        this.plunderLoc = plunderLoc;
         this.radius = radius;
         this.oldPlayers = oldPlayers == null ? new ArrayList<>() : oldPlayers;
         this.isEliminated = isEliminated;
-        this.defaultEliminationCooldown = defaultEliminationCooldown;
-        this.eliminationCooldown = eliminationCooldown;
         this.permissions = permissions;
         scoreboardTeam = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("gt" + UUID.randomUUID().toString().substring(0, 4) + ":" + id);
         updateParams();
-    }
-
-    public String getProgressBar() {
-        if (eliminationCooldown == 0)
-            if (isEliminated)
-                return Utils.progressBar("§f[", "§f]", "", "", "§2|", "", 16, 1.0f, "§a{p}% {b}");
-            else
-                return Utils.progressBar("§f[", "§f]", "", "", "", "§c|", 32, 0.0f, "§a{p..}% {b}");
-        else
-            return Utils.progressBar("§f[", "§f]", new String[]{
-                            "§e|", "§e|", "§e|", "§e|", "§a|", "§a|", "§a|", "§a|", "§a|", "§a|",
-                            "§a|", "§a|", "§a|", "§a|", "§2|", "§2|", "§2|", "§6|", "§c|", "§4|"
-                    }, "§7|", "§2|", "§c|", 32,
-                    (float) ((eliminationCooldown * 1.0) / defaultEliminationCooldown), "§a{p.}% {b}");
     }
 
     public boolean everyoneIsNearOf(Location loc) {
@@ -130,81 +101,9 @@ public class GTeam {
         });
     }
 
-    public boolean isEliminating() {
-        return eliminationCooldown > 0;
-    }
-
-    public void tryToEliminate(GTeam team, Location plunderLocation) {
-        eliminationCooldown = defaultEliminationCooldown;
-        eliminators = team.getId();
-        plunderLoc = plunderLocation;
-        updateArmorStand();
-//        getGuardian().setCustomNameVisible(true);
-
-        Broadcast.log(SpecialChars.WARNING + " L'équipe §l" + getColor() + getName()
-                + "§r se fait !assaillir par les §l" + team.getColor() + team.getName() + "§r ! (Plus que !"
-                + ((int) (eliminationCooldown / 20)) + " sec)");
-
-        team.getPlayers().stream().map(GPlayer::getPlayer).filter(Objects::nonNull).forEach(p -> {
-            p.sendMessage("§aVous essayez d'assaillir l'équipe " + color + name + "§a !"
-                    + "\n§aVous avez §c" + ((int) (eliminationCooldown / 20))
-                    + " secondes§a à tenir à moins de §c5 blocs§a du coffre§a... Courage !");
-            p.playSound(p.getLocation(), Sound.VILLAGER_IDLE, Float.MAX_VALUE, 1);
-        });
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-//                getGuardian();
-//                Entity e = getArmorStand();
-//                e.setCustomNameVisible(true);
-
-                if (!isEliminated && Objects.equals(team.getId(), eliminators) && team.everyoneIsNearOf(plunderLoc))
-                    if (eliminationCooldown > 0) {
-                        eliminationCooldown--;
-                        updateArmorStand();
-                        if (eliminationCooldown == (long) (defaultEliminationCooldown / 2))
-                            Broadcast.log(SpecialChars.WARNING + " " + SpecialChars.WARNING + " L'équipe §l"
-                                    + getColor() + getName() + "§r va bientôt se faire !éliminer par les §l"
-                                    + team.getColor() + team.getName() + "§r ! (Plus que !"
-                                    + ((int) (eliminationCooldown / 20)) + " sec)");
-                        else if (eliminationCooldown == 10 * 20)
-                            Broadcast.err(SpecialChars.WARNING + " " + SpecialChars.WARNING + " " + SpecialChars.WARNING
-                                    + " L'équipe §l" + getColor() + getName() + "§r n'a plus que !10 sec avant de !périr par les §l"
-                                    + team.getColor() + team.getName() + "§r !");
-                    } else {
-                        setEliminators(eliminators, true);
-                        eliminate(true, true, true);
-                        team.getPlayers().stream().map(GPlayer::getPlayer).filter(Objects::nonNull).forEach(p -> {
-                            p.sendMessage("§aBien joué camarades !");
-                            p.playSound(p.getLocation(), Sound.LEVEL_UP, 1, 1);
-                        });
-                        cancel();
-                    }
-                else {
-                    eliminationCooldown = 0;
-                    eliminators = null;
-                    plunderLoc = null;
-                    killArmorStand();
-//                    e.setCustomName(getProgressBar());
-//                    e.setCustomNameVisible(false);
-                    team.getPlayers().stream().map(GPlayer::getPlayer).filter(Objects::nonNull).forEach(p -> {
-                        p.sendMessage("§cAssaut Annulé.\n§cUne ou plusieurs personne de votre team a déserté le lieu du pillage.");
-                        p.playSound(p.getLocation(), Sound.ANVIL_LAND, 1, 1);
-                    });
-                    cancel();
-                }
-
-            }
-        }.runTaskTimer(Main.instance, 0, 1);
-    }
-
-    public void eliminate(boolean broadcast, boolean checkForTheOther, boolean save) {
+    public void eliminate(String eliminators, boolean broadcast, boolean checkForTheOther, boolean save) {
+        setEliminators(eliminators, false);
         isEliminated = true;
-        eliminationCooldown = 0;
-//        Entity e = getArmorStand();
-//        e.setCustomName(getProgressBar());
-//        e.setCustomNameVisible(isEliminated);
         getPlayers().forEach(p -> {
             oldPlayers.add(p.getName());
             if (broadcast && p.getPlayer() != null)
@@ -219,7 +118,7 @@ public class GTeam {
                     p.getPlayer().teleport(getManager().getLobby().getSpawn());
             }
         });
-        Broadcast.announcement(Main.PREFIX + "§r§lLa team " + name + " a été !éliminée §lde la partie."
+        Broadcast.announcement(Main.PREFIX + "§r§lLa team " + getName() + "§r a été !éliminée §lde la partie."
                 + "\nDonc !" + oldPlayers.size() + " !joueurs ont été éliminés.");
         if (save && getManager() != null)
             saveToConfig(getManager().getId(), false);
@@ -235,10 +134,6 @@ public class GTeam {
 
     public void reintroduce(boolean broadcast, boolean save) {
         isEliminated = false;
-        eliminationCooldown = 0;
-//        Entity e = getArmorStand();
-//        e.setCustomName(getProgressBar());
-//        e.setCustomNameVisible(isEliminated);
         int count = oldPlayers.size();
         oldPlayers.forEach(pName -> {
             GPlayer p = getManager().getPlayer(pName, true);
@@ -349,104 +244,6 @@ public class GTeam {
         scoreboardTeam.setAllowFriendlyFire(true);
     }
 
-//    public Entity getGuardian() {
-//        if (id.equalsIgnoreCase(GODS_ID) || id.equalsIgnoreCase(SPECS_ID))
-//            return null;
-//        if (chestsRoom == null)
-//            setChestsRoom(spawn.clone(), false, true);
-//        Villager e = null;
-//        for (Entity ee : chestsRoom.getWorld().getEntities())
-//            if (ee.getUniqueId().equals(guardian)) {
-//                e = (Villager) ee;
-//                break;
-//            }
-//        if (e == null) {
-////            EntityVillager vil = new EntityVillager(((CraftWorld) chestsRoom.getWorld()).getHandle()) {
-////                public String t() {
-////                    return "";
-////                }
-////            };
-////
-////            vil.spawnIn(((CraftWorld) chestsRoom.getWorld()).getHandle());
-////            vil.teleportTo(chestsRoom, false);
-////            e = (Villager) vil.getBukkitEntity();
-//
-//            e = (Villager) Main.world.spawnEntity(chestsRoom, EntityType.VILLAGER);
-//            e.setAdult();
-//            e.setAgeLock(true);
-//            e.setCanPickupItems(false);
-//            e.setCustomName("Guardian");
-//            e.setCustomNameVisible(false);
-////            e.setNoDamageTicks(Integer.MAX_VALUE);
-//            e.setRemoveWhenFarAway(false);
-//            ((CraftLivingEntity) e).getHandle().getDataWatcher().watch(15, (byte) 1); // NoGravity Option
-////            EntityLiving nms = ((CraftLivingEntity) e).getHandle();
-////            NBTTagCompound nbt = nms.getNBTTag();
-////
-////            nbt.setByte("NoAI", (byte) 1);
-////            nbt.setByte("NoGravity", (byte) 1);
-////
-////            nms.f(nbt);
-//            e.setMetadata(GUARDIAN_TAG, new FixedMetadataValue(Main.instance, id));
-//            setGuardianUuid(e.getUniqueId(), true);
-//        }
-//        return e;
-//    }
-//
-//    public void killGuardian() {
-//        if (guardian != null)
-//            Main.world.getEntities().stream().filter(e -> e.getUniqueId().equals(guardian)).forEach(Entity::remove);
-//        setGuardianUuid(null, true);
-//    }
-
-    public Entity updateArmorStand() {
-        if (id.equalsIgnoreCase(GODS_ID) || id.equalsIgnoreCase(SPECS_ID))
-            return null;
-        if (plunderLoc == null) {
-            killArmorStand();
-            return null;
-        } else {
-            ArmorStand e = null;
-            List<Entity> l = new ArrayList<>();
-            Bukkit.getWorlds().forEach(w -> l.addAll(w.getEntities().stream().filter(ee ->
-                    ee.hasMetadata(PLUNDER_STAND_TAG) && ee.getMetadata(PLUNDER_STAND_TAG).get(0)
-                            .asString().equalsIgnoreCase(id)).collect(Collectors.toList())));
-            if (l.size() > 0)
-                e = (ArmorStand) l.get(0);
-            if (l.size() > 1)
-                l.subList(1, l.size()).forEach(Entity::remove);
-            if (e == null) {
-                e = (ArmorStand) plunderLoc.getWorld().spawnEntity(plunderLoc.clone()
-                        .subtract(0, 1.45, 0), EntityType.ARMOR_STAND);
-                e.setVisible(false);
-                e.setGravity(false);
-                e.setCanPickupItems(false);
-                e.setSmall(false);
-                e.setBasePlate(false);
-                e.setRemoveWhenFarAway(false);
-                e.setNoDamageTicks(Integer.MAX_VALUE); // ~3.4 years of god mod
-                e.setMetadata(PLUNDER_STAND_TAG, new FixedMetadataValue(Main.instance, id));
-            }
-            e.setCustomNameVisible(true);
-            e.setCustomName(GPickableLocks.getProgressBar(defaultEliminationCooldown, eliminationCooldown));
-            return e;
-        }
-    }
-
-    public void killArmorStand() {
-        Bukkit.getWorlds().forEach(w -> w.getEntities().stream().filter(e -> e.hasMetadata(PLUNDER_STAND_TAG)
-                        && e.getMetadata(PLUNDER_STAND_TAG).get(0).asString().equalsIgnoreCase(id))
-                .forEach(Entity::remove));
-    }
-
-    public static int killAllArmorStands() {
-        List<Entity> l = new ArrayList<>();
-        Bukkit.getWorlds().forEach(w -> l.addAll(w.getEntities().stream().filter(e ->
-                e.hasMetadata(PLUNDER_STAND_TAG)).collect(Collectors.toList())));
-        l.forEach(Entity::remove);
-        return l.size();
-    }
-
     public String getId() {
         return id;
     }
@@ -543,21 +340,6 @@ public class GTeam {
         }
     }
 
-//    public Location get
-
-    public Location getPlunderLoc() {
-        return plunderLoc;
-    }
-
-    public void setPlunderLoc(Location plunderLoc, boolean save) {
-        this.plunderLoc = plunderLoc;
-        if (save && getManager() != null) {
-            if (!getConfig(getManager().getId()).exists())
-                saveToConfig(getManager().getId(), true);
-            getConfig(getManager().getId()).load().setPlunderLoc(plunderLoc, true).save();
-        }
-    }
-
     public double getRadius() {
         return radius;
     }
@@ -568,19 +350,6 @@ public class GTeam {
             if (!getConfig(getManager().getId()).exists())
                 saveToConfig(getManager().getId(), true);
             getConfig(getManager().getId()).load().setRadius(radius, true).save();
-        }
-    }
-
-    public long getDefaultEliminationCooldown() {
-        return defaultEliminationCooldown;
-    }
-
-    public void setDefaultEliminationCooldown(long defaultEliminationCooldown, boolean save) {
-        this.defaultEliminationCooldown = defaultEliminationCooldown;
-        if (save && getManager() != null) {
-            if (!getConfig(getManager().getId()).exists())
-                saveToConfig(getManager().getId(), true);
-            getConfig(getManager().getId()).load().setTimeout(defaultEliminationCooldown, true).save();
         }
     }
 
@@ -656,14 +425,6 @@ public class GTeam {
                 saveToConfig(getManager().getId(), true);
             getConfig(getManager().getId()).load().setEliminated(isEliminated, true).save();
         }
-    }
-
-    public long getEliminationCooldown() {
-        return eliminationCooldown;
-    }
-
-    public void setEliminationCooldown(long eliminationCooldown) {
-        this.eliminationCooldown = eliminationCooldown;
     }
 
     public Team getScoreboardTeam() {

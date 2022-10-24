@@ -32,13 +32,6 @@ public class EntityDamageHandler implements Listener {
         LivingEntity entity = (LivingEntity) e.getEntity();
         Location tempLoc = entity.getLocation().add(0, 0.5, 0);
 
-        if (GManager.getCurrentGame() != null && entity.hasMetadata(GTeam.PLUNDER_STAND_TAG)
-                && e.getDamage() < 1_000_000_000_000_000_000_000.0
-                && e.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-            e.setCancelled(true);
-            return;
-        }
-
         if (e.getEntity() instanceof Player) {
             Player p = (Player) e.getEntity();
             GPlayer fp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
@@ -87,7 +80,7 @@ public class EntityDamageHandler implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (!e.isCancelled() && Main.customLootingMobsSystem && !entity.hasMetadata(GTeam.PLUNDER_STAND_TAG))
+                    if (!e.isCancelled() && Main.customLootingMobsSystem)
                         if (entity instanceof Creeper) {
                             if (((Creeper) entity).isPowered())
                                 new Loots()
