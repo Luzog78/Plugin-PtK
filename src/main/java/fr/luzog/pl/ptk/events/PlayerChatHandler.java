@@ -3,14 +3,12 @@ package fr.luzog.pl.ptk.events;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 
-public class PlayerChatHandler implements Listener {
+public class PlayerChatHandler {
 
-    @EventHandler
-    public void onPlayerChat(PlayerChatEvent e) {
+    @Events.Event
+    public static void onPlayerChat(PlayerChatEvent e) {
         e.setCancelled(true);
         GPlayer fp;
         if (GManager.getCurrentGame() == null

@@ -1,8 +1,7 @@
 package fr.luzog.pl.ptk;
 
+import fr.luzog.pl.ptk.events.Events;
 import org.bukkit.Material;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
@@ -83,9 +82,9 @@ public class InCaseThereIsAProblem {
         }
     }
 
-    public static class Listener implements org.bukkit.event.Listener {
+    public static class Listener {
 
-        @EventHandler(priority = EventPriority.HIGHEST)
+        @Events.Event
         public static void onBreakBlock(BlockBreakEvent e) {
             if (breakWhitelist.contains(e.getBlock().getType())) {
                 e.setCancelled(false);
@@ -94,7 +93,7 @@ public class InCaseThereIsAProblem {
             }
         }
 
-        @EventHandler(priority = EventPriority.HIGHEST)
+        @Events.Event
         public static void onPlaceBlock(BlockPlaceEvent e) {
             if (placeWhitelist.contains(e.getBlock().getType())) {
                 e.setCancelled(false);

@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.commands.Cheat;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.events.Events;
 import fr.luzog.pl.ptk.utils.CmdUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -9,8 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Freeze implements CommandExecutor, TabCompleter, Listener {
+public class Freeze implements CommandExecutor, TabCompleter {
     public static final String syntaxe = "/freeze [(on | off)] <players...>";
 
     public static List<String> frozen = new ArrayList<>();
@@ -58,8 +57,8 @@ public class Freeze implements CommandExecutor, TabCompleter, Listener {
         player.sendMessage(Main.PREFIX + "§cVous ne pouvez pas effectuer cette action.");
     }
 
-    @EventHandler
-    public static void onMove(PlayerMoveEvent e) {
+    @Events.Event
+    public static void onPlayerMove(PlayerMoveEvent e) {
         if (isFrozen(e.getPlayer().getName()) && (e.getFrom().getX() != e.getTo().getX()
                 || e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getFrom().getZ())) {
             frozenWarning(e.getPlayer());
@@ -67,55 +66,55 @@ public class Freeze implements CommandExecutor, TabCompleter, Listener {
         }
     }
 
-    @EventHandler
-    public static void onInteract(PlayerInteractEvent e) {
+    @Events.Event
+    public static void onPlayerInteract(PlayerInteractEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public static void onInteractEntity(PlayerInteractEntityEvent e) {
+    @Events.Event
+    public static void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public static void onInteractAtEntity(PlayerInteractAtEntityEvent e) {
+    @Events.Event
+    public static void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public static void onPickup(PlayerPickupItemEvent e) {
+    @Events.Event
+    public static void onPlayerPickupItem(PlayerPickupItemEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public static void onDrop(PlayerDropItemEvent e) {
+    @Events.Event
+    public static void onPlayerDropItem(PlayerDropItemEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public static void onBedEnter(PlayerBedEnterEvent e) {
+    @Events.Event
+    public static void onPlayerBedEnter(PlayerBedEnterEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
             e.setCancelled(true);
         }
     }
 
-    @EventHandler
+    @Events.Event
     public static void onBucketEmpty(PlayerBucketEmptyEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());
@@ -123,7 +122,7 @@ public class Freeze implements CommandExecutor, TabCompleter, Listener {
         }
     }
 
-    @EventHandler
+    @Events.Event
     public static void onBucketFill(PlayerBucketFillEvent e) {
         if (isFrozen(e.getPlayer().getName())) {
             frozenWarning(e.getPlayer());

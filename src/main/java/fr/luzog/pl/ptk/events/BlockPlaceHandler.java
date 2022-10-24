@@ -6,15 +6,13 @@ import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Material;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 import java.util.List;
 
-public class BlockPlaceHandler implements Listener {
+public class BlockPlaceHandler {
 
-    @EventHandler
+    @Events.Event
     public static void onPlaceBlock(BlockPlaceEvent e) {
         List<GPlayer> fps = GManager.getGlobalPlayer(e.getPlayer().getName());
         if (fps.isEmpty()) {

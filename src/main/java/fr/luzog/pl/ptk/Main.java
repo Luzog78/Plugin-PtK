@@ -23,10 +23,11 @@ import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    public static final Object VERSION = "Alpha 1.2";
+    public static final Object VERSION = "Alpha 1.3";
     public static final String CMD = "ptk";
 
-    private static int sideLength = 27, centerLength;
+    private static final int sideLength = 27;
+    private static int centerLength;
 
     public static String SEASON, IP, SYS_PREFIX, PREFIX, HEADER, FOOTER, REBOOT_KICK_MESSAGE;
     public static ArrayList<String> ORGA;
@@ -83,7 +84,7 @@ public class Main extends JavaPlugin implements Listener {
 
         soufInstruction("§6Initialisation du module : §eListeners§6...");
         getServer().getPluginManager().registerEvents(Main.instance, Main.instance);
-        Events.events.forEach(e -> getServer().getPluginManager().registerEvents(e, Main.instance));
+        getServer().getPluginManager().registerEvents(new Events(), Main.instance);
 
         new BukkitRunnable() {
             @Override

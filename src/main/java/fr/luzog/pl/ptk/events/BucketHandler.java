@@ -5,16 +5,14 @@ import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
 import fr.luzog.pl.ptk.utils.Utils;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 
 import java.util.List;
 
-public class BucketHandler implements Listener {
+public class BucketHandler {
 
-    @EventHandler
+    @Events.Event
     public static void onEmpty(PlayerBucketEmptyEvent e) {
         List<GPlayer> fps = GManager.getGlobalPlayer(e.getPlayer().getName());
         if (fps.isEmpty()) {
@@ -35,7 +33,7 @@ public class BucketHandler implements Listener {
         }
     }
 
-    @EventHandler
+    @Events.Event
     public static void onFill(PlayerBucketFillEvent e) {
         List<GPlayer> fps = GManager.getGlobalPlayer(e.getPlayer().getName());
         if (fps.isEmpty()) {

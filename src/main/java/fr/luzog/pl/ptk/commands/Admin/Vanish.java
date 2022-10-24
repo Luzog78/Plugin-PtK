@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.commands.Admin;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.events.Events;
 import fr.luzog.pl.ptk.utils.CmdUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -8,8 +9,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class Vanish implements CommandExecutor, TabCompleter, Listener {
+public class Vanish implements CommandExecutor, TabCompleter {
     public static final String syntaxe = "/vanish [(on | off)] [<players...>]";
     public static String pre_suf_ix;
     public static boolean isPrefix;
@@ -65,8 +64,8 @@ public class Vanish implements CommandExecutor, TabCompleter, Listener {
         return false;
     }
 
-    @EventHandler
-    public static void onJoin(PlayerJoinEvent e) {
+    @Events.Event
+    public static void onPlayerJoin(PlayerJoinEvent e) {
         refreshVanished();
     }
 

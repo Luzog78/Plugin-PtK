@@ -3,15 +3,12 @@ package fr.luzog.pl.ptk.events;
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
-import fr.luzog.pl.ptk.game.GTeam;
 import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Loots;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -19,9 +16,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class EntityDamageHandler implements Listener {
+public class EntityDamageHandler {
 
-    @EventHandler
+    @Events.Event
     public static void onDamage(EntityDamageEvent e) {
         if (e.getEntity().getType() == EntityType.ARMOR_STAND)
             return;
@@ -95,10 +92,10 @@ public class EntityDamageHandler implements Listener {
                                         .lootsInclusive()
                                         .forEach(is -> entity.getWorld().dropItemNaturally(tempLoc, is));
                         } else
-                            Events.killMobLoots.forEach(loot -> {
-                                if (entity.getType() == loot.getType() && (loot.getData() == Events.EntityData.WHATEVER || (loot.getData() != Events.EntityData.WHATEVER
-                                        && (entity instanceof Creeper && ((Creeper) entity).isPowered() == (loot.getData() == Events.EntityData.CREEPER_SUPERCHARGED))
-                                        || (entity instanceof Skeleton && ((Skeleton) entity).getSkeletonType() == (loot.getData() == Events.EntityData.SKELETON_WITHER ?
+                            CustomLoots.killMobLoots.forEach(loot -> {
+                                if (entity.getType() == loot.getType() && (loot.getData() == CustomLoots.EntityData.WHATEVER || (loot.getData() != CustomLoots.EntityData.WHATEVER
+                                        && (entity instanceof Creeper && ((Creeper) entity).isPowered() == (loot.getData() == CustomLoots.EntityData.CREEPER_SUPERCHARGED))
+                                        || (entity instanceof Skeleton && ((Skeleton) entity).getSkeletonType() == (loot.getData() == CustomLoots.EntityData.SKELETON_WITHER ?
                                         Skeleton.SkeletonType.WITHER : Skeleton.SkeletonType.NORMAL))))) {
                                     Location loc = entity.getLocation().clone().add(0, 0.3, 0);
                                     int chanceLvl = entity.hasMetadata(Events.lastDamageLootingLevelTag) ?

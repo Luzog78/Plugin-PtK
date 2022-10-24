@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-public class BlockBreakHandler implements Listener {
+public class BlockBreakHandler {
 
     public static void dropNormally(Location loc, ItemStack is) {
         dropNormally(loc, Collections.singletonList(is));
@@ -31,7 +31,7 @@ public class BlockBreakHandler implements Listener {
         is.forEach(i -> l.getWorld().dropItemNaturally(l, i));
     }
 
-    @EventHandler
+    @Events.Event
     public static void onBreakBlock(BlockBreakEvent e) {
         GPlayer fp;
         if (GManager.getCurrentGame() == null
@@ -72,7 +72,7 @@ public class BlockBreakHandler implements Listener {
 
         boolean finalSilkTouch = silkTouch;
         if (Main.customLootingBlocksSystem)
-            Events.breakBlockLoots.forEach(item -> {
+            CustomLoots.breakBlockLoots.forEach(item -> {
                 if (item.getMaterials().contains(e.getBlock().getType())) {
                     e.setCancelled(true);
                     e.getBlock().setType(Material.AIR, true);

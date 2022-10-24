@@ -7,8 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -22,7 +20,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Crafting implements Listener {
+public class Crafting {
 
     public static List<ShapedCraft> shapedCrafts = new ArrayList<>();
     public static List<ShapelessCraft> shapelessCrafts = new ArrayList<>();
@@ -470,7 +468,7 @@ public class Crafting implements Listener {
         new ShapedCraft(result).setIngredient(ingredient, 1, 5, 7).register();
     }
 
-    @EventHandler
+    @Events.Event
     public static void onBlockInteract(PlayerInteractEvent e) {
         if (!Main.customCraftingTable || !e.hasBlock() || e.getClickedBlock().getType() != Material.WORKBENCH)
             return;
@@ -486,7 +484,7 @@ public class Crafting implements Listener {
         }.runTask(Main.instance);
     }
 
-    @EventHandler
+    @Events.Event
     public static void onClose(InventoryCloseEvent e) {
         if (!e.getInventory().getName().equals(NAME) || e.getInventory().getSize() != getInv().getSize())
             return;
@@ -509,7 +507,7 @@ public class Crafting implements Listener {
                 });
     }
 
-    @EventHandler
+    @Events.Event
     public static void onClick(InventoryClickEvent e) {
         if (!e.getInventory().getName().equals(NAME))
             return;

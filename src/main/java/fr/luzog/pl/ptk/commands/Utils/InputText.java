@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.commands.Utils;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.events.Events;
 import fr.luzog.pl.ptk.utils.CmdUtils;
 import fr.luzog.pl.ptk.utils.Color;
 import fr.luzog.pl.ptk.utils.Items;
@@ -15,8 +16,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -26,7 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class InputText implements CommandExecutor, TabCompleter, Listener {
+public class InputText implements CommandExecutor, TabCompleter {
     public static final String syntaxe = "/input <varCount> <command...>"
             + "\n§cL'argument 'command' peut supporter les variables de formatage java."
             + "\n§cExemple : %b, %d, %f, %x, %s  ||  %15s ou %-15.2f";
@@ -133,16 +132,16 @@ public class InputText implements CommandExecutor, TabCompleter, Listener {
         }
     }
 
-    @EventHandler
-    public void onForgeFalls(BlockPhysicsEvent e) {
+    @Events.Event
+    public static void onForgeFall(BlockPhysicsEvent e) {
         if ((e.getBlock().getType() == Material.ANVIL || e.getChangedType() == Material.ANVIL)
                 && inputs.values().stream().map(Utils.Triple::getA).anyMatch(l ->
                 l != null && l.equals(e.getBlock().getLocation())))
             e.setCancelled(true);
     }
 
-    @EventHandler
-    public void onExit(InventoryCloseEvent e) {
+    @Events.Event
+    public static void onExit(InventoryCloseEvent e) {
         if (inputs.containsKey(e.getPlayer().getUniqueId())) {
             e.getInventory().clear();
 //            inputs.get(e.getPlayer().getUniqueId()).getA().getBlock().setType(Material.AIR, false);
@@ -151,8 +150,8 @@ public class InputText implements CommandExecutor, TabCompleter, Listener {
         }
     }
 
-    @EventHandler
-    public void onClick(InventoryClickEvent e) {
+    @Events.Event
+    public static void onClick(InventoryClickEvent e) {
         if (e.getInventory().getType() == InventoryType.ANVIL
                 && inputs.containsKey(e.getWhoClicked().getUniqueId())) {
             e.setCancelled(true);

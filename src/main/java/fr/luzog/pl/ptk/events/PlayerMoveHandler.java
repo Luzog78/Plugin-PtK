@@ -4,16 +4,14 @@ import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GZone;
 import fr.luzog.pl.ptk.utils.Utils;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.List;
 
-public class PlayerMoveHandler implements Listener {
+public class PlayerMoveHandler {
 
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
+    @Events.Event
+    public static void onPlayerMove(PlayerMoveEvent e) {
         List<GPlayer> gPlayers = GManager.getGlobalPlayer(e.getPlayer().getName());
 
         for (GPlayer p : gPlayers) {

@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.game;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.events.Events;
 import fr.luzog.pl.ptk.utils.*;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.TileEntity;
@@ -295,22 +296,22 @@ public class GPickableLocks {
         }
     }
 
-    public static class Listener implements org.bukkit.event.Listener {
+    public static class Listener {
 
-        @EventHandler(priority = EventPriority.LOW)
+        @Events.Event
         public static void onBreakBlock(BlockBreakEvent e) {
             if (GManager.getCurrentGame() != null &&
                     GManager.getCurrentGame().getPickableLocks().isPickableLock(e.getBlock().getLocation()))
                 e.setCancelled(true);
         }
 
-        @EventHandler(priority = EventPriority.LOW)
+        @Events.Event
         public static void onExplode(BlockExplodeEvent e) {
             e.blockList().removeIf(block -> GManager.getCurrentGame() != null &&
                     GManager.getCurrentGame().getPickableLocks().isPickableLock(block.getLocation()));
         }
 
-        @EventHandler(priority = EventPriority.LOW)
+        @Events.Event
         public static void onInteract(PlayerInteractEvent e) {
             Action a = e.getAction();
             Player p = e.getPlayer();

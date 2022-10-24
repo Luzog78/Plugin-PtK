@@ -8,8 +8,6 @@ import fr.luzog.pl.ptk.utils.Limits;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -22,9 +20,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class InventoryClickHandler implements Listener {
+public class InventoryClickHandler {
 
-    @EventHandler
+    @Events.Event
     public static void onClick(InventoryClickEvent e) {
         if (e.getInventory().getType() == InventoryType.BREWING && e.getCurrentItem().getType() == Material.POTION
                 && (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT)) {

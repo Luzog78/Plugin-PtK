@@ -13,14 +13,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Ad implements CommandExecutor, TabCompleter, Listener {
+public class Ad implements CommandExecutor, TabCompleter {
     public static final String AD_PREFIX = "§8§l[§2Ad§8§l] >>  ",
             SYS_NAME = "§4§lSYSTEM";
     public static ArrayList<Item> ads = new ArrayList<>();
