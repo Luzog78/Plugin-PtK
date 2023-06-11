@@ -3,6 +3,7 @@ package fr.luzog.pl.ptk.game;
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Admin.Vanish;
 import fr.luzog.pl.ptk.commands.Other.Ad;
+import fr.luzog.pl.ptk.game.role.GRole;
 import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Color;
 import fr.luzog.pl.ptk.utils.SpecialChars;
@@ -14,11 +15,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static fr.luzog.pl.ptk.commands.Other.Ad.State.WAITING;
@@ -81,8 +85,9 @@ public class GListener {
                 if (countDown - 1 == 0) {
                     // TODO -> Save.save();
                     countDown = savingTimeOut * delayer;
-                } else
+                } else {
                     countDown--;
+                }
 
                 manager.getPlayers().stream().map(GPlayer::getPersonalListener)
                         .filter(Objects::nonNull).forEach(PersonalListener::refreshScoreName);
@@ -96,32 +101,102 @@ public class GListener {
                         Broadcast.succ("§e§lNouvelle journée !!§r Passage au jour !" + manager.getDay() + " !");
                         manager.checkActivations(false);
                         manager.saveManager(false);
-                        for(GPickableLocks.Lock lock : manager.getPickableLocks().getPickableLocks())
-                            if(lock.getLevel() == manager.getDay())
-                                lock.broadcast();
                         manager.getPlayers().stream().map(GPlayer::getPersonalListener)
                                 .filter(Objects::nonNull).forEach(PersonalListener::refreshEasterEgg);
-                    } else if (manager.getTime() >= 24000 - 100 && manager.getTime() % 20 == 0)
+                        if (manager.getDay() == 2) {
+                            // Role attributions
+                            manager.getParticipantsTeams().forEach(team -> {
+                                if (team.getPlayers().size() == 0) {
+                                    team.eliminate(true, false, true);
+                                    return;
+                                }
+                                GPlayer player = team.getPlayers().get(new Random().nextInt(team.getPlayers().size()));
+                                try {
+                                    player.setRoleInfo((GRole.Info) GRole.Roles.KING.getInfoClass().newInstance(), true);
+                                } catch (InstantiationException | IllegalAccessException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                List<GRole.Roles> roles = new ArrayList<>(Arrays.asList(GRole.Roles.values()));
+                                roles.remove(GRole.Roles.DEFAULT);
+                                roles.remove(GRole.Roles.KING);
+                                Collections.shuffle(roles);
+                                for (GPlayer p : team.getPlayers()) {
+                                    if (p.getRoleInfo() == null || p.getRoleInfo().getRole() == GRole.Roles.DEFAULT) {
+                                        try {
+                                            GRole.Roles role = roles.get(0);
+                                            p.setRoleInfo((GRole.Info) role.getInfoClass().newInstance(), true);
+                                            roles.add(role);
+                                            roles.remove(0);
+                                        } catch (InstantiationException | IllegalAccessException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                }
+                            });
+                            manager.getPlayers()//.stream().map(GPlayer::getPlayer).filter(Objects::nonNull)
+                                    .forEach(p -> new BukkitRunnable() {
+                                        @Override
+                                        public void run() {
+                                            Player pl = p.getPlayer();
+                                            if (pl != null) {
+                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3, false, false), true);
+                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 100, 255, false, false), true);
+                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255, false, false), true);
+                                                pl.sendMessage(Main.PREFIX + "§aVous êtes §6§n" + p.getRoleInfo().getRole().getRole().getName() + "§a !");
+                                                pl.sendMessage("  §e" + p.getRoleInfo().getRole().getRole().getDescription());
+                                                pl.sendMessage("§aBonne chance !");
+                                            }
+                                        }
+                                    }.runTaskLater(Main.instance, 1));
+                        }
+                        for (GPickableLocks.Lock lock : manager.getPickableLocks().getPickableLocks()) {
+                            if (lock.getLevel() == manager.getDay()) {
+                                lock.broadcast();
+                            }
+                        }
+                        for (GRole.Roles role : GRole.Roles.values()) {
+                            if (role.getRole().getDaysRunnables().containsKey(manager.getDay())) {
+                                role.getRole().getDaysRunnables().get(manager.getDay()).runTask(Main.instance);
+                            }
+                        }
+                    } else if (manager.getTime() >= 24000 - 100 && manager.getTime() % 20 == 0) {
                         Broadcast.log("Nouvelle journée dans !" + ((24000 - manager.getTime()) / 20) + " !secondes§r...");
-                    else if (manager.getTime() == 24000 - 200)
+                    } else if (manager.getTime() == 24000 - 200) {
                         Broadcast.log("Nouvelle journée dans !10 !secondes§r...");
-                    else if (manager.getTime() == 24000 - 400)
+                    } else if (manager.getTime() == 24000 - 400) {
                         Broadcast.log("Nouvelle journée dans !20 !secondes§r...");
-                    else if (manager.getTime() == 24000 - 600)
+                    } else if (manager.getTime() == 24000 - 600) {
                         Broadcast.log("Nouvelle journée dans !30 !secondes§r...");
-                    else if (manager.getTime() == 24000 - 1200)
+                    } else if (manager.getTime() == 24000 - 1200) {
                         Broadcast.log("Nouvelle journée dans !1 !minute§r...");
-                    else if (manager.getTime() == 24000 - 1200 * 2)
+                    } else if (manager.getTime() == 24000 - 1200 * 2) {
                         Broadcast.log("Nouvelle journée dans !2 !minutes§r...");
-                    else if (manager.getTime() == 24000 - 1200 * 3)
+                    } else if (manager.getTime() == 24000 - 1200 * 3) {
                         Broadcast.log("Nouvelle journée dans !3 !minutes§r...");
-                } else
+                    }
+                } else {
                     manager.increaseTime(0, false);
+                }
+
+                for (GRole.Roles role : GRole.Roles.values()) {
+                    role.getRole().tick();
+                }
 
                 manager.getPlayers().forEach(gPlayer -> {
                     Player p = gPlayer.getPlayer();
                     if (p == null)
                         return;
+
+                    if (manager.getDay() == 1) {
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 260, 0, false, false), true);
+                            }
+                        }.runTask(Main.instance);
+                    }
+
+                    gPlayer.getRoleInfo().tick(p);
 
                     if (gPlayer.getPersonalListener() != null) {
                         gPlayer.getPersonalListener().setScoreLines();
@@ -192,7 +267,7 @@ public class GListener {
     public PacketPlayOutPlayerListHeaderFooter getTHF(Player p) {
         GPlayer fp = manager.getPlayer(p.getName(), false);
         List<String> h = new ArrayList<>(), f = new ArrayList<>();
-        h.add("§c======= §9§l-=[ §6§l" + Main.SEASON + " §9§l]=- §c=======");
+        h.add("§c======= §9§l-=[ §2§l" + Main.SEASON + " §9§l]=- §c=======");
         h.add(" ");
         if (Main.ORGA != null && !Main.ORGA.isEmpty())
             h.add("§9Organisateurs : §f" + String.join("§9, §f", Main.ORGA));
@@ -271,14 +346,41 @@ public class GListener {
         f.add(" ");
 //        f.add("§6Save in " + (getSavingTime() < 60 ? "§c" + getSavingTime() + "§6s"
 //                : "§c" + ((int) (getSavingTime() / 60)) + "§6min and §c" + (getSavingTime() % 60) + "§6s"));
-        f.add("§8Online : §b" + Bukkit.getOnlinePlayers().size() + "§7/" + Bukkit.getMaxPlayers() + "   §8Ip :§a " + Main.IP);
+        if (fp != null) {
+            double ratio;
+            String color;
+            if (fp.getStats().getKills() == 0 && fp.getStats().getDeaths() == 0) {
+                ratio = 1;
+                color = "§7⁼";
+            } else if (fp.getStats().getKills() == 0) {
+                ratio = Double.POSITIVE_INFINITY; // To avoid the "-" char
+                color = "§4⁻";
+            } else if (fp.getStats().getDeaths() == 0) {
+                ratio = Double.POSITIVE_INFINITY;
+                color = "§2⁺";
+            } else {
+                ratio = fp.getStats().getKills() / (fp.getStats().getDeaths() == 0 ? 0.5 : fp.getStats().getDeaths());
+                if (ratio < 1) {
+                    ratio = (1 / ratio);
+                    color = "§4⁻";
+                } else if (ratio > 1) {
+                    color = "§2⁺";
+                } else {
+                    color = "§7⁼";
+                }
+            }
+            f.add("§8Kills : §b" + fp.getStats().getKills() + "§7/§c" + fp.getStats().getDeaths()
+                    + " §7- §8Ratio : " + color + (ratio == Double.POSITIVE_INFINITY ? "∞"
+                    : new DecimalFormat("0.00").format(ratio)));
+        }
+        f.add("§8En ligne : §b" + Bukkit.getOnlinePlayers().size() + "§7/" + Bukkit.getMaxPlayers() + "   §8Ip :§a " + Main.IP);
         f.add("§c====================================");
         return Utils.getTabHeaderAndFooter(h, f);
     }
 
     public static PacketPlayOutPlayerListHeaderFooter getDefaultTHF(Player p) {
         List<String> h = new ArrayList<>(), f = new ArrayList<>();
-        h.add("§c======= §9§l-=[ §6§l" + Main.SEASON + " §9§l]=- §c=======");
+        h.add("§c======= §9§l-=[ §2§l" + Main.SEASON + " §9§l]=- §c=======");
         h.add(" ");
         if (Main.ORGA != null && !Main.ORGA.isEmpty())
             h.add("§9Organisateurs : §f" + String.join("§9, §f", Main.ORGA));
@@ -287,7 +389,7 @@ public class GListener {
         h.add("§cBienvenue à toi cher §f" + p.getDisplayName() + "§c,");
         h.add("§cMalheureusement, tu n'es actuellement");
         h.add("§cpas un participant de la partie actuelle");
-        h.add("§cde §9§l[ §6§l" + Main.SEASON + " §9§l]§c.");
+        h.add("§cde §9§l[ §2§l" + Main.SEASON + " §9§l]§c.");
         h.add("§cDemande à un §4Administrateur de");
         h.add("§ct'ajouter à la partie ou patiente");
         h.add("§cquelques instants...");
@@ -418,7 +520,6 @@ public class GListener {
         private Map<String, Integer> al; // Ancian ScoreBoard List -> to up to date
         private String scoreName = "Game";
         private ChatColor easterEgg = ChatColor.YELLOW;
-        private int pageTimeout;
 
         public PersonalListener(GPlayer gPlayer) {
             setGPlayer(gPlayer);
@@ -427,7 +528,6 @@ public class GListener {
             objective.setDisplaySlot(DisplaySlot.SIDEBAR);
             l = new HashMap<>();
             al = new HashMap<>();
-            pageTimeout = 0;
             refreshEasterEgg();
         }
 
@@ -467,9 +567,10 @@ public class GListener {
         }
 
         public void setScoreLines() {
-            int sec = increaseTimeout() / 4;
+            // >>  /20 for 1 sec = 20 ticks, /x for 1 page = x sec, %y for y pages
+            int page = (int) (gPlayer.getManager().getTime() / (20 * 3.5)) % 3;
             // §c----------
-            if (sec < 10) {
+            if (page == 2) {
                 l.clear();
                 l.put("§r", 11);
                 l.put("§8Jour : §3" + gPlayer.getManager().getDay(), 10);
@@ -486,22 +587,40 @@ public class GListener {
                         l.isPickable() && !l.isPicked() && l.getLevel() <= GPickableLocks.getPickingLevel(gPlayer.getManager())).count(), 2);
                 l.put("§r§r§r§r", 1);
                 l.put("        " + easterEgg + SpecialChars.MISC_3, 0);
-            } else if (sec < 20) {
+            } else if (page == 0) {
                 l.clear();
                 l.put("§r", 10);
                 l.put("§8Jour : §3" + gPlayer.getManager().getDay(), 9);
                 l.put("§8Heure : §3" + gPlayer.getManager().getFormattedTime(), 8);
                 l.put("§r§r", 7);
                 l.put("§6Équipe : " + (gPlayer.getTeam() == null ? "§cAucune" : "§f" + gPlayer.getTeam().getName()), 6);
-                l.put("§6Rôle : §eAucun", 5);
+                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRole().getRole().getName(), 5);
                 l.put("§r§r§r", 4);
                 l.put("§d" + SpecialChars.SWORDS + "§5 Kills : §d" + gPlayer.getStats().getKills(), 3);
                 l.put("§d" + SpecialChars.DANGER_DEATH + "§5 Deaths : §d" + gPlayer.getStats().getDeaths(), 2);
                 l.put("§r§r§r§r", 1);
                 l.put("        " + easterEgg + SpecialChars.MISC_3, 0);
-            } else {
-                resetTimeout();
-                setScoreLines();
+            } else if (page == 1) {
+                int n = gPlayer.getManager().getParticipantsTeams().size();
+                l.clear();
+                l.put("§r", n + 6);
+                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRole().getRole().getName(), n + 5);
+                l.put("§r§r", n + 4);
+                l.put("§6Équipes §7(§f" + gPlayer.getManager().getParticipantsTeams().stream()
+                        .filter(t -> !t.isEliminated()).count() + "§7) : ", n + 3);
+                l.put("§r§r§r", n + 2);
+                int i = 0;
+                for (GTeam t : gPlayer.getManager().getParticipantsTeams()) {
+                    boolean self = Objects.equals(t.getId(), gPlayer.getTeamId());
+                    l.put("  " + t.getName() + "§f : "
+                            + (t.isEliminated() ? GListener.n
+                            : t.hasKing() || gPlayer.getManager().getDay() == 1 ? GListener.y
+                            : "§e" + t.getPlayers().size())
+                            + (self ? "§7 §o(TOI)" : ""), i + 2);
+                    i++;
+                }
+                l.put("§r§r§r§r", 1);
+                l.put("        " + easterEgg + SpecialChars.MISC_3, 0);
             }
         }
 
@@ -577,22 +696,6 @@ public class GListener {
 
         public void setEasterEgg(ChatColor easterEgg) {
             this.easterEgg = easterEgg;
-        }
-
-        public int getPageTimeout() {
-            return pageTimeout;
-        }
-
-        public void setPageTimeout(int pageTimeout) {
-            this.pageTimeout = pageTimeout;
-        }
-
-        public int increaseTimeout() {
-            return pageTimeout++;
-        }
-
-        public void resetTimeout() {
-            pageTimeout = 0;
         }
     }
 }

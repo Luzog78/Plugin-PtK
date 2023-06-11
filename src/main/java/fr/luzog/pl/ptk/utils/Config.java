@@ -2,6 +2,7 @@ package fr.luzog.pl.ptk.utils;
 
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.*;
+import fr.luzog.pl.ptk.game.role.GRole;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,11 +21,17 @@ public class Config {
 
     public static class Globals extends Config {
         public static final String VERSION = "version", LANG = "lang", SEASON = "season", IP = "ip", ORGA = "orga",
+                SPAWN_PROTECTION_DURATION = "spawn-protection-duration",
                 OVERWORLD = "worlds.over", NETHER = "worlds.nether", END = "worlds.end",
                 CUSTOM_CRAFTS = "custom-options.vanilla-crafts",
                 CUSTOM_CRAFTING_TABLE = "custom-options.crafting-table",
                 CUSTOM_LOOTING_BLOCKS = "custom-options.block-looting-system",
                 CUSTOM_LOOTING_MOBS = "custom-options.mob-looting-system",
+                CUSTOM_CREEPER_ACTIVATED = "custom-options.creeper-handler.activated",
+                CUSTOM_CREEPER_CHANCE = "custom-options.creeper-handler.supercharged-chance",
+                CUSTOM_CREEPER_DROPS_NORMAL = "custom-options.creeper-handler.drop-chances.normal",
+                CUSTOM_CREEPER_DROPS_CHARGED = "custom-options.creeper-handler.drop-chances.charged",
+                ACTIVATION_AD = "activation.ad", ACTIVATION_COMPASS = "activation.compass",
                 LAST_GAME = "last-game", VANISH_PRE_SUF_IX = "vanish.pre-suf-ix", VANISH_IS_PREFIX = "vanish.is-prefix",
                 VANISH_PLAYERS = "vanish.players";
 
@@ -62,6 +69,15 @@ public class Config {
 
         public List<String> getOrga() {
             return super.getStrList(ORGA);
+        }
+
+        public long getSpawnProtectionDuration() {
+            return super.getLong(SPAWN_PROTECTION_DURATION);
+        }
+
+        public Globals setSpawnProtectionDuration(long spawnProtectionDuration, boolean force) {
+            super.set(SPAWN_PROTECTION_DURATION, spawnProtectionDuration, force);
+            return this;
         }
 
         public World getOverworld() {
@@ -124,6 +140,24 @@ public class Config {
             return this;
         }
 
+        public boolean isAdActivated() {
+            return super.getBool(ACTIVATION_AD);
+        }
+
+        public Globals setAdActivated(boolean ad, boolean force) {
+            super.set(ACTIVATION_AD, ad, force);
+            return this;
+        }
+
+        public boolean isCompassActivated() {
+            return super.getBool(ACTIVATION_COMPASS);
+        }
+
+        public Globals setCompassActivated(boolean compass, boolean force) {
+            super.set(ACTIVATION_COMPASS, compass, force);
+            return this;
+        }
+
         public String getLastGame() {
             return super.getStr(LAST_GAME);
         }
@@ -181,6 +215,58 @@ public class Config {
             super.set(VANISH_PRE_SUF_IX, preSufIx, force);
             super.set(VANISH_IS_PREFIX, isPrefix, force);
             super.set(VANISH_PLAYERS, new ArrayList<>(players), force);
+            return this;
+        }
+    }
+
+    public static class Kit extends Config {
+        public static final String INFOS = "info", KITS = "kits";
+
+        public Kit(@Nonnull String path) {
+            super(path, true);
+        }
+
+        @Override
+        public Kit load() {
+            super.load();
+            return this;
+        }
+
+        @Override
+        public Kit save() {
+            super.save();
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public List<Map<Object, Object>> getInfos() {
+            List<Map<Object, Object>> l = new ArrayList<>();
+            for (Map<?, ?> map : super.getMapList(KITS))
+                try {
+                    l.add((Map<Object, Object>) map);
+                } catch (Exception ignored) {
+                }
+            return l;
+        }
+
+        public Kit setInfos(List<Map<Object, Object>> infos, boolean force) {
+            super.set(INFOS, infos, force);
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public List<Utils.SavedInventory> getKits() {
+            ArrayList<Utils.SavedInventory> l = new ArrayList<>();
+            for (Map<?, ?> map : super.getMapList(KITS))
+                try {
+                    l.add(Utils.SavedInventory.fromMap((Map<String, Object>) map));
+                } catch (Exception ignored) {
+                }
+            return l;
+        }
+
+        public Kit setKits(List<Utils.SavedInventory> kits, boolean force) {
+            super.set(KITS, kits.stream().map(Utils.SavedInventory::toMap).collect(Collectors.toList()), force);
             return this;
         }
     }
@@ -541,6 +627,7 @@ public class Config {
 
     public static class Team extends Config {
         public static final String NAME = "name", PREFIX = "prefix", COLOR = "color", RADIUS = "radius",
+                BREAK_BONUS = "break-bonus.claimed", BREAK_BONUS_LOC = "break-bonus.location",
                 ELIMINATED = "elimination.eliminated", ELIMINATORS = "elimination.eliminators",
                 OLD_PLAYERS = "old-players", SPAWN = "spawn", PERMISSIONS = "permissions";
 
@@ -605,6 +692,24 @@ public class Config {
             return this;
         }
 
+        public boolean isBreakBonusClaimed() {
+            return super.getBool(BREAK_BONUS);
+        }
+
+        public Team setBreakBonusClaimed(boolean activated, boolean force) {
+            super.set(BREAK_BONUS, activated, force);
+            return this;
+        }
+
+        public Location getBreakBonusLocation() {
+            return super.getLoc(BREAK_BONUS_LOC);
+        }
+
+        public Team setBreakBonusLocation(Location loc, boolean force) {
+            super.setLoc(BREAK_BONUS_LOC, loc, force);
+            return this;
+        }
+
         public double getRadius() {
             return super.getDouble(RADIUS);
         }
@@ -643,8 +748,8 @@ public class Config {
     }
 
     public static class Player extends Config {
-        public static final String LAST_UUID = "last-uuid", TEAM = "team", COMPASS = "compass",
-                STATS = "stats", PERMISSIONS = "permissions";
+        public static final String LAST_UUID = "last-uuid", TEAM = "team", ROLE_INFO = "role-info", COMPASS = "compass",
+                STATS = "stats", PERMISSIONS = "permissions", INVENTORIES = "inventories";
 
         public Player(@Nonnull String path) {
             super(path, true);
@@ -684,6 +789,15 @@ public class Config {
             return this;
         }
 
+        public GRole.Info getRoleInfo() {
+            return GRole.Info.anyRoleInfoFromMap(super.getMap(ROLE_INFO));
+        }
+
+        public Player setRoleInfo(GRole.Info roleInfo, boolean force) {
+            super.set(ROLE_INFO, roleInfo == null ? new HashMap<>() : roleInfo.toMap(), force);
+            return this;
+        }
+
         public GPlayer.Compass getCompass() {
             if (contains(COMPASS) && contains(COMPASS + ".location"))
                 return new GPlayer.Compass(getStr(COMPASS + ".name"),
@@ -695,7 +809,7 @@ public class Config {
 
         public Player setCompass(GPlayer.Compass compass, boolean force) {
             if (compass == null)
-                super.set(COMPASS, null, force);
+                super.set(COMPASS, new HashMap<>(), force);
             else {
                 super.set(COMPASS + ".name", compass.getName(), force);
                 super.set(COMPASS + ".radius", compass.getRadius(), force);
@@ -719,6 +833,22 @@ public class Config {
 
         public Player setPermissions(GPermissions perm, boolean force) {
             super.setPermissions(PERMISSIONS, perm, force);
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public List<Utils.SavedInventory> getInventories() {
+            ArrayList<Utils.SavedInventory> l = new ArrayList<>();
+            for (Map<?, ?> map : super.getMapList(INVENTORIES))
+                try {
+                    l.add(Utils.SavedInventory.fromMap((Map<String, Object>) map));
+                } catch (Exception ignored) {
+                }
+            return l;
+        }
+
+        public Player setInventories(List<Utils.SavedInventory> inventories, boolean force) {
+            super.set(INVENTORIES, inventories.stream().map(Utils.SavedInventory::toMap).collect(Collectors.toList()), force);
             return this;
         }
     }
@@ -1112,25 +1242,25 @@ public class Config {
     }
 
     public boolean getBool(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return config.getBoolean(path);
     }
 
     public byte getByte(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return Byte.parseByte(config.get(path) + "");
     }
 
     public short getShort(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return Short.parseShort(config.get(path) + "");
     }
 
     public char getChar(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         if ((config.get(path) + "").length() != 1)
             throw new RuntimeException("Invalid char");
@@ -1138,27 +1268,33 @@ public class Config {
     }
 
     public int getInt(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return config.getInt(path);
     }
 
     public long getLong(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return config.getLong(path);
     }
 
     public double getDouble(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return config.getDouble(path);
     }
 
     public float getFloat(String path) {
-        if(isNull(path))
+        if (isNull(path))
             throw new NumberFormatException("The path '" + path + "' is null");
         return Float.parseFloat(config.get(path) + "");
+    }
+
+    public Map<String, Object> getMap(String path) {
+        if (isNull(path))
+            return new HashMap<>();
+        return config.getConfigurationSection(path).getValues(false);
     }
 
     public List<Boolean> getBoolList(String path) {
@@ -1322,7 +1458,7 @@ public class Config {
                         : null;
                 if (def != null)
                     perms.setPermission(type, def);
-            } catch (NullPointerException ignored) {
+            } catch (NullPointerException | IllegalArgumentException ignored) {
             }
         return perms;
     }

@@ -15,7 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class InvSee implements CommandExecutor, TabCompleter {
-    public static final String syntaxe = "/invsee <seerPlayer> <targetPlayer> [<arg>]\nArgs :\n > -n / --normal\n > -a / --armor\n > -ec / --ender-chest";
+    public static final String syntaxe = "/invsee <seerPlayer> <targetPlayer> [<arg>]" +
+            "\nArgs :" +
+            "\n > -n / --normal" +
+            "\n > -a / --armor" +
+            "\n > -ec / --ender-chest";
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] args) {

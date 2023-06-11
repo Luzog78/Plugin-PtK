@@ -1,19 +1,21 @@
 package fr.luzog.pl.ptk.events;
 
+import com.google.common.base.Objects;
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
+import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,32 +35,48 @@ public class BlockBreakHandler {
 
     @Events.Event
     public static void onBreakBlock(BlockBreakEvent e) {
-        GPlayer fp;
+        GPlayer gp;
         if (GManager.getCurrentGame() == null
-                || (fp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false)) == null) {
+                || (gp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false)) == null) {
             e.setCancelled(true);
             return;
         }
 
-        if (!fp.hasPermission(Events.specialMat.contains(e.getBlock().getType()) ?
-                GPermissions.Type.BREAKSPE : GPermissions.Type.BREAK,
+        if (!gp.hasPermission(Events.specialMat.contains(e.getBlock().getType()) ?
+                        GPermissions.Type.BREAKSPE : GPermissions.Type.BREAK,
                 Utils.normalize(e.getBlock().getLocation()), 10)) {
             e.setCancelled(true);
             return;
         }
 
         if (Events.unbreakableMat.contains(e.getBlock().getType())
-                && fp.getTeam() != null && fp.getTeam().getId().equals(GTeam.GODS_ID)) {
+                && Objects.equal(gp.getTeamId(), GTeam.GODS_ID)) {
             e.setCancelled(true);
             e.getPlayer().sendMessage(Main.PREFIX + "§cBlock Incassable.");
             return;
         }
 
-        fp.getStats().increaseBlocksBroken();
+        gp.getStats().increaseBlocksBroken();
         if (Arrays.asList(Material.COAL_ORE, Material.IRON_ORE, Material.GOLD_ORE, Material.REDSTONE_ORE,
                 Material.LAPIS_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE, Material.QUARTZ_ORE,
                 Material.GLOWING_REDSTONE_ORE).contains(e.getBlock().getType()))
-            fp.getStats().increaseOresBroken();
+            gp.getStats().increaseOresBroken();
+
+        if (gp.getTeam() != null)
+            gp.getManager().getParticipantsTeams().forEach(t -> {
+                if (t.getBreakBonusLocation() != null && t.getBreakBonusLocation().toVector()
+                        .equals(e.getBlock().getLocation().toVector())) {
+                    Broadcast.succ(gp.getDisplayName() + "§f de l'équipe §f" + gp.getTeam().getName()
+                            + "§r a récupéré le bonus §6doré§r de l'équipe §f" + t.getName() + "§r !");
+                    gp.getTeam().getPlayers().forEach(p -> {
+                        if (p.getPlayer() != null) {
+                            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
+                            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 1000000, 4, false, false));
+                        }
+                    });
+                    t.setBreakBonusClaimed(true, true);
+                }
+            });
 
         if (e.getPlayer().getGameMode() == GameMode.CREATIVE || e.getPlayer().getGameMode() == GameMode.SPECTATOR)
             return;
@@ -72,22 +90,33 @@ public class BlockBreakHandler {
 
         boolean finalSilkTouch = silkTouch;
         if (Main.customLootingBlocksSystem)
-            CustomLoots.breakBlockLoots.forEach(item -> {
+            Events.breakBlockLoots.forEach(item -> {
                 if (item.getMaterials().contains(e.getBlock().getType())) {
                     e.setCancelled(true);
                     e.getBlock().setType(Material.AIR, true);
                     ArrayList<ItemStack> drops = new ArrayList<>();
-                    double exp = 0;
+                    Location l = Utils.normalize(e.getBlock().getLocation());
                     if (item.isExclusive())
                         drops.add(item.getLoots().lootsExclusive(chanceLvl, finalSilkTouch));
                     else
                         drops.addAll(item.getLoots().lootsInclusive(chanceLvl, finalSilkTouch));
-//                        for(ItemStack i : drops)
-//                            if(i.getType() == Material.IRON_INGOT || i.getType() == Material.IRON_ORE)
-//                                exp += 0.7;
-//                            else if (i.getType() == Material.GOLD_INGOT || i.getType() == Material.GOLD_ORE)
-//                                exp += 1.0;
                     dropNormally(e.getBlock().getLocation(), drops);
+                    for (ItemStack i : drops)
+                        if (i.getType() == Material.COAL || i.getType() == Material.COAL_ORE)
+                            Utils.dropEXPOrb(0, 2, l);
+                        else if (i.getType() == Material.IRON_INGOT || i.getType() == Material.IRON_INGOT)
+                            Utils.dropEXPOrb(1, 3, l);
+                        else if (i.getType() == Material.GOLD_INGOT || i.getType() == Material.GOLD_ORE)
+                            Utils.dropEXPOrb(1, 5, l);
+                        else if (i.getType() == Material.LAPIS_ORE || i.getType() == Material.INK_SACK)
+                            Utils.dropEXPOrb(2, 3, l);
+                        else if (i.getType() == Material.QUARTZ || i.getType() == Material.QUARTZ_ORE)
+                            Utils.dropEXPOrb(2, 5, l);
+                        else if (i.getType() == Material.DIAMOND || i.getType() == Material.DIAMOND_ORE
+                                || i.getType() == Material.EMERALD || i.getType() == Material.EMERALD_ORE)
+                            Utils.dropEXPOrb(3, 7, l);
+                        else if (i.getType() == Material.REDSTONE || i.getType() == Material.REDSTONE_ORE)
+                            Utils.dropEXPOrb(1, 5, l);
                 }
             });
     }

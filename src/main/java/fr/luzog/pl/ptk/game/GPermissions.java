@@ -9,7 +9,12 @@ import java.util.Map;
 
 public class GPermissions {
 
-    public static enum Type {PVP, FRIENDLY_FIRE, BREAK, BREAKSPE, MOBS, PLACE, PLACESPE;}
+    public static enum Type {
+        PVP, FRIENDLY_FIRE, MOBS,
+        BREAK, BREAKSPE, PLACE, PLACESPE,
+        CHAT_GLOBAL, CHAT_TEAM, CHAT_PRIVATE,
+        GAME, KICK_WARN, BAN;
+    }
 
     public static enum Definition {
         ON, OFF, DEFAULT;

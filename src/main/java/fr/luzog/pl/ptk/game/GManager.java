@@ -3,12 +3,16 @@ package fr.luzog.pl.ptk.game;
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.utils.*;
 import org.bukkit.*;
+import org.bukkit.Color;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -98,6 +102,7 @@ public class GManager {
                 Utils.tryTo(printStackTrace, () -> manager.setFriendly(Objects.requireNonNull(config.getFriendlyPermissions()), false));
                 Utils.tryTo(printStackTrace, () -> manager.setHostile(Objects.requireNonNull(config.getHostilePermissions()), false));
                 Utils.tryTo(printStackTrace, () -> manager.setPriority(Objects.requireNonNull(config.getPriorityPermissions()), false));
+                Utils.tryTo(printStackTrace, manager::normalizeGlobal);
 
 
                 for (File ff : Objects.requireNonNull(f.listFiles()))
@@ -162,6 +167,8 @@ public class GManager {
                                 Utils.tryTo(printStackTrace, () -> team.setColor(Objects.requireNonNull(tc.getColor()), false));
                                 Utils.tryTo(printStackTrace, () -> team.setPrefix(Objects.requireNonNull(tc.getPrefix()), false));
                                 Utils.tryTo(printStackTrace, () -> team.setRadius(tc.getRadius(), false));
+                                Utils.tryTo(printStackTrace, () -> team.setBreakBonusClaimed(tc.isBreakBonusClaimed(), false));
+                                Utils.tryTo(printStackTrace, () -> team.setBreakBonusLocation(tc.getBreakBonusLocation(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setEliminated(tc.isEliminated(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setEliminators(tc.getEliminators(), false));
                                 Utils.tryTo(printStackTrace, () -> team.setOldPlayers(tc.getOldPlayers(), false));
@@ -180,10 +187,11 @@ public class GManager {
                             if (fff.isFile() && fff.getName().toLowerCase().endsWith(".yml"))
                                 try {
                                     Config.Player pc = new Config.Player(String.format("%s/players/%s", f.getName(), fff.getName())).load();
-                                    GPlayer player = new GPlayer(fff.getName().substring(0, fff.getName().length() - 4), null, null);
+                                    GPlayer player = new GPlayer(fff.getName().substring(0, fff.getName().length() - 4), null, null, null);
 
                                     Utils.tryTo(printStackTrace, () -> player.setLastUuid(Objects.requireNonNull(pc.getLastUuid()), false));
                                     Utils.tryTo(printStackTrace, () -> player.setTeam(Objects.requireNonNull(pc.getTeam()), false));
+                                    Utils.tryTo(printStackTrace, () -> player.setRoleInfo(Objects.requireNonNull(pc.getRoleInfo()), false));
                                     Utils.tryTo(printStackTrace, () -> player.setCompass(pc.getCompass(), false));
                                     Utils.tryTo(printStackTrace, () -> player.setStats(Objects.requireNonNull(pc.getStats()), false));
                                     Utils.tryTo(printStackTrace, () -> player.setPersonalPermissions(Objects.requireNonNull(pc.getPermissions()), false));
@@ -336,13 +344,19 @@ public class GManager {
         setTime(0, false);
         setLinkedToSun(true, false);
         setOptions(GOptions.getDefaultOptions(), false);
-        setListener(new GListener(60 * 5), false);
+        setListener(new GListener(60 * 3), false);
         setLimits(new Limits(), false);
         setNether(new Portal("§dNether", loc, null, null, loc, null, null, Material.PORTAL, Material.AIR, (byte) 0, 100, false), false);
         setEnd(new Portal("§5End", loc, null, null, loc, null, null, Material.ENDER_PORTAL, Material.AIR, (byte) 0, 10, false), false);
         setLobby(new GZone(null, GZone.Type.LOBBY,
                 loc, loc, loc,
-                new GPermissions(GPermissions.Definition.OFF)), false);
+                new GPermissions(GPermissions.Definition.OFF,
+                        new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.DEFAULT),
+                        new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.DEFAULT),
+                        new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.DEFAULT),
+                        new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.DEFAULT),
+                        new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.DEFAULT),
+                        new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.DEFAULT))), false);
         setSpawn(new GZone(null, GZone.Type.SPAWN,
                 loc, loc, loc,
                 new GPermissions(GPermissions.Definition.DEFAULT,
@@ -350,38 +364,68 @@ public class GManager {
                         new GPermissions.Item(GPermissions.Type.PLACE, GPermissions.Definition.OFF),
                         new GPermissions.Item(GPermissions.Type.MOBS, GPermissions.Definition.OFF))), false);
         setNormalZones(new ArrayList<GZone>() {{
-//            add(new FKZone("nether", FKZone.Type.ZONE,
-//                    Bukkit.getWorld("world_nether").getSpawnLocation(),
-//                    new Location(Bukkit.getWorld("world_nether"), Integer.MIN_VALUE, -1, Integer.MIN_VALUE),
-//                    new Location(Bukkit.getWorld("world_nether"), Integer.MAX_VALUE, 256, Integer.MAX_VALUE),
-//                    new FKPermissions(FKPermissions.Definition.ON)));
-//            add(new FKZone("end", FKZone.Type.ZONE,
-//                    Bukkit.getWorld("world_the_end").getSpawnLocation(),
-//                    new Location(Bukkit.getWorld("world_the_end"), Integer.MIN_VALUE, -1, Integer.MIN_VALUE),
-//                    new Location(Bukkit.getWorld("world_the_end"), Integer.MAX_VALUE, 256, Integer.MAX_VALUE),
-//                    new FKPermissions(FKPermissions.Definition.ON)));
+            add(new GZone("nether", GZone.Type.ZONE,
+                    Main.nether.getSpawnLocation(),
+                    new Location(Main.nether, Integer.MIN_VALUE, -1, Integer.MIN_VALUE),
+                    new Location(Main.nether, Integer.MAX_VALUE, 256, Integer.MAX_VALUE),
+                    new GPermissions(GPermissions.Definition.ON,
+                            new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.DEFAULT))));
+            add(new GZone("end", GZone.Type.ZONE,
+                    Main.end.getSpawnLocation(),
+                    new Location(Main.end, Integer.MIN_VALUE, -1, Integer.MIN_VALUE),
+                    new Location(Main.end, Integer.MAX_VALUE, 256, Integer.MAX_VALUE),
+                    new GPermissions(GPermissions.Definition.ON,
+                            new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.DEFAULT),
+                            new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.DEFAULT))));
         }}, false);
         setPlayers(new ArrayList<>(), false);
         setGods(new GTeam("gods", "Dieux", SpecialChars.STAR_5_6 + " Dieu ||  ", null, ChatColor.DARK_RED,
-                loc, loc, 0, new ArrayList<>(), false, 0, 0, new GPermissions(GPermissions.Definition.ON)), false);
+                loc, loc, 0, false, new ArrayList<>(), false, new GPermissions(GPermissions.Definition.ON)), false);
         setSpecs(new GTeam("specs", "Specs", SpecialChars.FLOWER_3 + " Spec ||  ", null, ChatColor.GRAY,
-                loc, loc, 0, new ArrayList<>(), false, 0, 0, new GPermissions(GPermissions.Definition.OFF)), false);
+                loc, loc, 0, false, new ArrayList<>(), false, new GPermissions(GPermissions.Definition.OFF,
+                new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.DEFAULT))), false);
         setParticipantsTeams(new ArrayList<>(), false);
         setGlobal(new GPermissions(GPermissions.Definition.OFF,
                 new GPermissions.Item(GPermissions.Type.BREAKSPE, GPermissions.Definition.ON),
                 new GPermissions.Item(GPermissions.Type.PLACESPE, GPermissions.Definition.ON),
                 new GPermissions.Item(GPermissions.Type.PVP, GPermissions.Definition.ON),
-                new GPermissions.Item(GPermissions.Type.MOBS, GPermissions.Definition.ON)), false);
+                new GPermissions.Item(GPermissions.Type.MOBS, GPermissions.Definition.ON),
+                new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.ON),
+                new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.ON),
+                new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.ON),
+                new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.OFF),
+                new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.OFF),
+                new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.OFF)), false);
         setNeutral(new GPermissions(GPermissions.Definition.DEFAULT,
                 new GPermissions.Item(GPermissions.Type.BREAK, GPermissions.Definition.ON),
-                new GPermissions.Item(GPermissions.Type.PLACE, GPermissions.Definition.OFF)), false);
+                new GPermissions.Item(GPermissions.Type.PLACE, GPermissions.Definition.ON)), false);
         setFriendly(new GPermissions(GPermissions.Definition.DEFAULT,
                 new GPermissions.Item(GPermissions.Type.BREAK, GPermissions.Definition.ON),
                 new GPermissions.Item(GPermissions.Type.PLACE, GPermissions.Definition.ON)), false);
         setHostile(new GPermissions(GPermissions.Definition.DEFAULT,
                 new GPermissions.Item(GPermissions.Type.BREAK, GPermissions.Definition.OFF),
                 new GPermissions.Item(GPermissions.Type.PLACE, GPermissions.Definition.OFF)), false);
-        setPriority(new GPermissions(GPermissions.Definition.OFF), false);
+        setPriority(new GPermissions(GPermissions.Definition.OFF,
+                new GPermissions.Item(GPermissions.Type.CHAT_GLOBAL, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.CHAT_TEAM, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.CHAT_PRIVATE, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.GAME, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.KICK_WARN, GPermissions.Definition.DEFAULT),
+                new GPermissions.Item(GPermissions.Type.BAN, GPermissions.Definition.DEFAULT)), false);
         setPickableLocks(new GPickableLocks(), false);
 
         setState(State.WAITING, false);
@@ -448,7 +492,7 @@ public class GManager {
     public static ItemStack getBanner() {
         ItemStack banner = new ItemStack(Material.BANNER, 1, (short) 15);
         BannerMeta meta = (BannerMeta) banner.getItemMeta();
-        meta.setDisplayName("§9§l-=[ §6" + Main.SEASON + " §9§l]=-");
+        meta.setDisplayName("§9§l-=[ §2" + Main.SEASON + " §9§l]=-");
         meta.addPattern(new Pattern(DyeColor.BLACK, PatternType.RHOMBUS_MIDDLE));
         meta.addPattern(new Pattern(DyeColor.ORANGE, PatternType.CURLY_BORDER));
         meta.addPattern(new Pattern(DyeColor.ORANGE, PatternType.CIRCLE_MIDDLE));
@@ -536,6 +580,67 @@ public class GManager {
      * }
      */
 
+    public void equipStartingKit(Player p, GTeam t) {
+        p.getInventory().setItem(0, new ItemStack(Material.WOOD_SWORD));
+        p.getInventory().setItem(1, new ItemStack(Material.WOOD_PICKAXE));
+        p.getInventory().setItem(2, new ItemStack(Material.WOOD_AXE));
+        p.getInventory().setItem(3, new ItemStack(Material.WOOD_SPADE));
+        p.getInventory().setItem(4, new ItemStack(Material.WOOD, 16));
+        p.getInventory().setItem(7, new ItemStack(Material.APPLE, 3));
+        p.getInventory().setItem(8, new ItemStack(Material.COOKED_BEEF, 16));
+
+        ItemStack helmet = new ItemStack(Material.LEATHER_HELMET);
+        ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+        ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS);
+        ItemStack boots = new ItemStack(Material.LEATHER_BOOTS);
+
+        LeatherArmorMeta meta = (LeatherArmorMeta) helmet.getItemMeta();
+        if (t != null) {
+            Color color;
+            if (t.getColor() == ChatColor.BLACK) {
+                color = Color.fromRGB(0, 0, 0);
+            } else if (t.getColor() == ChatColor.DARK_BLUE) {
+                color = Color.fromRGB(0, 0, 170);
+            } else if (t.getColor() == ChatColor.DARK_GREEN) {
+                color = Color.fromRGB(0, 170, 0);
+            } else if (t.getColor() == ChatColor.DARK_AQUA) {
+                color = Color.fromRGB(0, 170, 170);
+            } else if (t.getColor() == ChatColor.DARK_RED) {
+                color = Color.fromRGB(170, 0, 0);
+            } else if (t.getColor() == ChatColor.DARK_PURPLE) {
+                color = Color.fromRGB(170, 0, 170);
+            } else if (t.getColor() == ChatColor.GOLD) {
+                color = Color.fromRGB(255, 170, 0);
+            } else if (t.getColor() == ChatColor.GRAY) {
+                color = Color.fromRGB(170, 170, 170);
+            } else if (t.getColor() == ChatColor.DARK_GRAY) {
+                color = Color.fromRGB(85, 85, 85);
+            } else if (t.getColor() == ChatColor.BLUE) {
+                color = Color.fromRGB(85, 85, 255);
+            } else if (t.getColor() == ChatColor.GREEN) {
+                color = Color.fromRGB(85, 255, 85);
+            } else if (t.getColor() == ChatColor.AQUA) {
+                color = Color.fromRGB(85, 255, 255);
+            } else if (t.getColor() == ChatColor.RED) {
+                color = Color.fromRGB(255, 85, 85);
+            } else if (t.getColor() == ChatColor.LIGHT_PURPLE) {
+                color = Color.fromRGB(255, 85, 255);
+            } else if (t.getColor() == ChatColor.YELLOW) {
+                color = Color.fromRGB(255, 255, 85);
+            } else {
+                color = Color.fromRGB(255, 255, 255);
+            }
+            meta.setColor(color);
+        }
+
+        helmet.setItemMeta(meta);
+        chestplate.setItemMeta(meta);
+        leggings.setItemMeta(meta);
+        boots.setItemMeta(meta);
+
+        p.getInventory().setArmorContents(new ItemStack[]{ boots, leggings, chestplate, helmet });
+    }
+
     public void start() {
         Utils.countDown(null, 15, false, true, true,
                 "La partie commence dans §c%i%§rs...\n§7Préparez-vous à démarrer votre aventure !",
@@ -550,10 +655,10 @@ public class GManager {
                             p.getPlayer().setExp(0);
                             p.getPlayer().setTotalExperience(0);
                             if (p.getTeam() != null)
-                                if (p.getTeam().getId().equals(GTeam.GODS_ID)) {
+                                if (Objects.equals(p.getTeamId(), GTeam.GODS_ID)) {
                                     p.getPlayer().setGameMode(GameMode.CREATIVE);
                                     p.getPlayer().setFlying(true);
-                                } else if (p.getTeam().getId().equals(GTeam.SPECS_ID)) {
+                                } else if (Objects.equals(p.getTeamId(), GTeam.SPECS_ID)) {
                                     p.getPlayer().setGameMode(GameMode.SPECTATOR);
                                 } else {
                                     p.getPlayer().setGameMode(GameMode.SURVIVAL);
@@ -563,10 +668,16 @@ public class GManager {
                                     p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 2400, 255, false, false), true);
                                     p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 2400, 255, false, false), true);
                                     p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2400, 1, false, false), true);
+
+                                    equipStartingKit(p.getPlayer(), p.getTeam());
                                 }
-                            p.getPlayer().teleport(p.getTeam() == null ? getLobby().getSpawn()
+                            Location loc = (p.getTeam() == null ? getLobby().getSpawn()
                                     : Objects.equals(p.getTeamId(), GTeam.GODS_ID) || Objects.equals(p.getTeamId(), GTeam.SPECS_ID) ?
-                                    getSpawn().getSpawn() : p.getTeam().getSpawn());
+                                    getSpawn().getSpawn() : p.getTeam().getSpawn()).clone();
+                            while (loc.getBlock().getType() != Material.AIR || loc.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {
+                                loc.add(0, 1, 0);
+                            }
+                            p.getPlayer().teleport(loc);
                         }
                     });
                     setPriority(new GPermissions(GPermissions.Definition.DEFAULT), true);
@@ -615,13 +726,13 @@ public class GManager {
                 p.getPlayer().setFoodLevel(20);
                 p.getPlayer().setSaturation(20);
                 p.getPlayer().teleport(getLobby().getSpawn());
-                if (winners.contains(p) || (p.getTeam() != null && p.getTeam().getId().equals(GTeam.GODS_ID))) {
+                if (winners.contains(p) || Objects.equals(p.getTeamId(), GTeam.GODS_ID)) {
                     p.getPlayer().setGameMode(GameMode.CREATIVE);
                     p.getPlayer().setFlying(true);
                 } else {
                     p.getPlayer().setGameMode(GameMode.SURVIVAL);
                 }
-                if (p.getTeam() == null || !p.getTeam().getId().equals(GTeam.GODS_ID)) {
+                if (p.getTeam() == null || !Objects.equals(p.getTeamId(), GTeam.GODS_ID)) {
                     p.getPlayer().getInventory().clear();
                     p.getPlayer().getInventory().setArmorContents(null);
                 }
@@ -650,6 +761,7 @@ public class GManager {
     public void reboot() {
         String m1 = "§8§lRéinitialisation de la partie...", m2 = "§7Patience, le début est proche !";
         getPlayers().forEach(p -> {
+            p.setRoleInfo(null, true);
             if (p.getPlayer() != null) {
                 p.getPlayer().setHealth(p.getPlayer().getMaxHealth());
                 p.getPlayer().setFoodLevel(20);
@@ -673,15 +785,14 @@ public class GManager {
 
     public void checkActivations(boolean force) {
         for (GOptions.GOption opt : options.getOptions())
-            if (opt.getActivationDay() >= 0)
-                if (force) {
-                    if (day >= opt.getActivationDay()) {
-                        if (!opt.isActivated())
-                            opt.activate(true);
-                    } else if (opt.isActivated())
-                        opt.deactivate(true);
-                } else if (day == opt.getActivationDay())
-                    opt.activate(true);
+            if (force) {
+                if (day >= opt.getActivationDay()) {
+                    if (!opt.isActivated())
+                        opt.activate(true);
+                } else if (opt.isActivated())
+                    opt.deactivate(true);
+            } else if (day == opt.getActivationDay())
+                opt.activate(true);
     }
 
     public GZone getZone(Location loc) {
@@ -1075,7 +1186,7 @@ public class GManager {
              *     if (i == null)
              *         throw new FKException.PlayerDoesNotExistException(name);
              */
-            GPlayer player = new GPlayer(name, null, null);
+            GPlayer player = new GPlayer(name, null, null, null);
             if (Bukkit.getPlayerExact(name) != null)
                 player.setLastUuid(Bukkit.getPlayerExact(name).getUniqueId(), false);
             players.add(player);
@@ -1167,12 +1278,18 @@ public class GManager {
     public void removeTeam(GTeam team) {
         teams.remove(team);
         team.getConfig(id).delete();
-        getPlayers().stream().filter(p -> p.getTeam() != null && p.getTeam().getId().equals(team.getId()))
+        getPlayers().stream().filter(p -> p.getTeam() != null && Objects.equals(p.getTeamId(), team.getId()))
                 .forEach(p -> p.leaveTeam(true));
     }
 
     public void removeTeam(String id) {
         removeTeam(getTeam(id));
+    }
+
+    public void normalizeGlobal() {
+        for (GPermissions.Type t : GPermissions.Type.values())
+            if (global.getPermission(t) == null || global.getPermission(t) == GPermissions.Definition.DEFAULT)
+                global.setPermission(t, GPermissions.Definition.OFF);
     }
 
     public GPermissions getGlobal() {
@@ -1181,6 +1298,7 @@ public class GManager {
 
     public void setGlobal(GPermissions global, boolean save) {
         this.global = global;
+        normalizeGlobal();
         if (save)
             getConfig().load().setGlobalPermissions(global, true).save();
     }

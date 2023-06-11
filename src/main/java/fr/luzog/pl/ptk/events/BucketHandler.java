@@ -8,50 +8,47 @@ import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 
-import java.util.List;
+import java.util.Objects;
 
 public class BucketHandler {
 
     @Events.Event
     public static void onEmpty(PlayerBucketEmptyEvent e) {
-        List<GPlayer> fps = GManager.getGlobalPlayer(e.getPlayer().getName());
-        if (fps.isEmpty()) {
+        GManager gm = GManager.getCurrentGame();
+        GPlayer fp;
+        if (gm == null || (fp = gm.getPlayer(e.getPlayer().getName(), false)) == null || fp.getTeam() == null) {
             e.setCancelled(true);
             return;
         }
 
-        for (GPlayer fp : fps) {
-            if (fp != null && ((fp.getManager().getState() == GManager.State.PAUSED
-                    && !fp.getTeam().getId().equals(fp.getManager().getGods().getId()))
-                    || !fp.hasPermission(Events.specialMat.contains(e.getBucket()) ? GPermissions.Type.PLACESPE :
-                    GPermissions.Type.PLACE, Utils.normalize(e.getBlockClicked().getRelative(e.getBlockFace()).getLocation()))
-                    || fp.getManager().getTeams().stream().anyMatch(t -> t.isInside(e.getBlockClicked().getLocation())
-                    && (!t.getId().equals(fp.getTeam().getId()) || t.getId().equals(GTeam.GODS_ID)) ))) {
-                e.setCancelled(true);
-                return;
-            }
+        if ((fp.getManager().getState() == GManager.State.PAUSED
+                && !Objects.equals(fp.getTeamId(), GTeam.GODS_ID))
+                || !fp.hasPermission(Events.specialMat.contains(e.getBucket()) ? GPermissions.Type.PLACESPE :
+                GPermissions.Type.PLACE, Utils.normalize(e.getBlockClicked().getRelative(e.getBlockFace()).getLocation()))
+                || fp.getManager().getTeams().stream().anyMatch(t -> t.isInside(e.getBlockClicked().getLocation())
+                && !Objects.equals(t.getId(), fp.getTeamId()) && !Objects.equals(fp.getTeamId(), GTeam.GODS_ID))) {
+            e.setCancelled(true);
+            return;
         }
     }
 
     @Events.Event
     public static void onFill(PlayerBucketFillEvent e) {
-        List<GPlayer> fps = GManager.getGlobalPlayer(e.getPlayer().getName());
-        if (fps.isEmpty()) {
+        GManager gm = GManager.getCurrentGame();
+        GPlayer fp;
+        if (gm == null || (fp = gm.getPlayer(e.getPlayer().getName(), false)) == null || fp.getTeam() == null) {
             e.setCancelled(true);
             return;
         }
 
-        for (GPlayer fp : fps) {
-            if (fp != null && ((fp.getManager().getState() == GManager.State.PAUSED
-                    && !fp.getTeam().getId().equals(fp.getManager().getGods().getId()))
-                    || !fp.hasPermission(Events.specialMat.contains(e.getBucket()) ? GPermissions.Type.BREAKSPE :
-                    GPermissions.Type.BREAK, Utils.normalize(e.getBlockClicked().getRelative(e.getBlockFace()).getLocation()))
-                    || fp.getManager().getTeams().stream().anyMatch(t ->
-                    t.isInside(e.getBlockClicked().getLocation()) && (!t.getId().equals(fp.getTeam().getId()) || t.getId().equals(GTeam.GODS_ID))
-            ))) {
-                e.setCancelled(true);
-                return;
-            }
+        if ((fp.getManager().getState() == GManager.State.PAUSED
+                && !Objects.equals(fp.getTeamId(), GTeam.GODS_ID))
+                || !fp.hasPermission(Events.specialMat.contains(e.getBucket()) ? GPermissions.Type.BREAKSPE :
+                GPermissions.Type.BREAK, Utils.normalize(e.getBlockClicked().getRelative(e.getBlockFace()).getLocation()))
+                || fp.getManager().getTeams().stream().anyMatch(t -> t.isInside(e.getBlockClicked().getLocation())
+                && !Objects.equals(t.getId(), fp.getTeamId()) && !Objects.equals(fp.getTeamId(), GTeam.GODS_ID))) {
+            e.setCancelled(true);
+            return;
         }
     }
 

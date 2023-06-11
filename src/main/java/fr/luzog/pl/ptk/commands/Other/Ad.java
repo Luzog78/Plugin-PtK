@@ -277,6 +277,11 @@ public class Ad implements CommandExecutor, TabCompleter {
         boolean isPlayer = sender instanceof Player && GManager.getCurrentGame().getGods().getPlayer(sender.getName()) == null;
         CmdUtils u = new CmdUtils(sender, cmd, msg, args, isPlayer ? syntaxe_player : syntaxe_admin);
 
+        if(!Main.globalConfig.isAdActivated() && !sender.isOp() && isPlayer) {
+            u.err("Le /ad est désactivé !");
+            return true;
+        }
+
         if (args.length >= 1 && (args[0].equalsIgnoreCase("help") || args[0].equals("?"))) {
             u.synt();
             return false;

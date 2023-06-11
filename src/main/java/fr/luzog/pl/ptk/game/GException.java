@@ -3,7 +3,7 @@ package fr.luzog.pl.ptk.game;
 public class GException extends RuntimeException {
 
     public GException(String message) {
-        super("[PtK Exception] " + message);
+        super("[Game Exception] " + message);
     }
 
     public static class IllegalGameIdException extends GException {

@@ -5,34 +5,801 @@ import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerListHeaderFooter;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
 
     public static final String loreSeparator = "------------------";
+
+    /**
+     * It's a class that represents a Mojang profile
+     */
+    public static class MojangProfile {
+        private UUID uuid;
+        private String name;
+        private String rawTextures;
+        private String rawSignature;
+        private long timestamp;
+        private String profileId;
+        private String profileName;
+        private String skinURL;
+        private String capeURL;
+
+        public MojangProfile(UUID uuid, String name, String rawTextures, String rawSignature) {
+            this.uuid = uuid;
+            this.name = name;
+            this.rawTextures = rawTextures;
+            this.rawSignature = rawSignature;
+
+            timestamp = 0;
+            profileId = null;
+            profileName = null;
+            skinURL = null;
+            capeURL = null;
+
+            try {
+                JSONObject obj = (JSONObject) new JSONParser().parse(new String(Base64.getDecoder().decode(this.rawTextures)));
+                if (obj.containsKey("timestamp"))
+                    timestamp = Long.parseLong(obj.get("timestamp").toString());
+                if (obj.containsKey("profileId"))
+                    profileId = obj.get("profileId").toString();
+                if (obj.containsKey("profileName"))
+                    profileName = obj.get("profileName").toString();
+                if (obj.containsKey("textures")) {
+                    JSONObject textures = (JSONObject) obj.get("textures");
+                    if (textures.containsKey("SKIN")) {
+                        JSONObject skin = (JSONObject) textures.get("SKIN");
+                        if (skin.containsKey("url"))
+                            skinURL = skin.get("url").toString();
+                    }
+                    if (textures.containsKey("CAPE")) {
+                        JSONObject cape = (JSONObject) textures.get("CAPE");
+                        if (cape.containsKey("url"))
+                            capeURL = cape.get("url").toString();
+                    }
+                }
+            } catch (ParseException ignored) {
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "MojangProfile{" +
+                    "uuid=" + uuid +
+                    ", name='" + name + '\'' +
+                    ", rawTextures='" + rawTextures + '\'' +
+                    ", rawSignature='" + rawSignature + '\'' +
+                    ", timestamp=" + timestamp +
+                    ", profileId='" + profileId + '\'' +
+                    ", profileName='" + profileName + '\'' +
+                    ", skinURL='" + skinURL + '\'' +
+                    ", capeURL='" + capeURL + '\'' +
+                    '}';
+        }
+
+        public UUID getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getRawTextures() {
+            return rawTextures;
+        }
+
+        public void setRawTextures(String rawTextures) {
+            this.rawTextures = rawTextures;
+        }
+
+        public String getRawSignature() {
+            return rawSignature;
+        }
+
+        public void setRawSignature(String rawSignature) {
+            this.rawSignature = rawSignature;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public String getProfileId() {
+            return profileId;
+        }
+
+        public void setProfileId(String profileId) {
+            this.profileId = profileId;
+        }
+
+        public String getProfileName() {
+            return profileName;
+        }
+
+        public void setProfileName(String profileName) {
+            this.profileName = profileName;
+        }
+
+        public String getSkinURL() {
+            return skinURL;
+        }
+
+        public void setSkinURL(String skinURL) {
+            this.skinURL = skinURL;
+        }
+
+        public String getCapeURL() {
+            return capeURL;
+        }
+
+        public void setCapeURL(String capeURL) {
+            this.capeURL = capeURL;
+        }
+    }
+
+    /**
+     * Pair is a generic class that holds two objects of any type.
+     */
+    public static class Pair<A, B> {
+        private A a;
+        private B b;
+
+        public Pair(A a, B b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        public A getKey() {
+            return a;
+        }
+
+        public B getValue() {
+            return b;
+        }
+
+        public void setKey(A a) {
+            this.a = a;
+        }
+
+        public void setValue(B b) {
+            this.b = b;
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" +
+                    "a=" + a +
+                    ", b=" + b +
+                    '}';
+        }
+    }
+
+    /**
+     * Triple is a class that holds three objects of any type.
+     */
+    public static class Triple<A, B, C> {
+        private A a;
+        private B b;
+        private C c;
+
+        public Triple(A a, B b, C c) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+
+        public A getA() {
+            return a;
+        }
+
+        public B getB() {
+            return b;
+        }
+
+        public C getC() {
+            return c;
+        }
+
+        public void setA(A a) {
+            this.a = a;
+        }
+
+        public void setB(B b) {
+            this.b = b;
+        }
+
+        public void setC(C c) {
+            this.c = c;
+        }
+
+        @Override
+        public String toString() {
+            return "Triple{" +
+                    "a=" + a +
+                    ", b=" + b +
+                    ", c=" + c +
+                    '}';
+        }
+    }
+
+    public static class TripleMap<A, B, C> {
+        private final ArrayList<Triple<A, B, C>> list;
+
+        public TripleMap() {
+            list = new ArrayList<>();
+        }
+
+        public void put(A a, B b, C c) {
+            list.add(new Triple<>(a, b, c));
+        }
+
+        public Triple<A, B, C> get(int index) {
+            return list.get(index);
+        }
+
+        public List<Triple<A, B, C>> getByA(A a) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByB(B b) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getB().equals(b))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByC(C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getC().equals(c))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByAB(A a, B b) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getB().equals(b))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByAC(A a, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByBC(B b, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getB().equals(b) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getByABC(A a, B b, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getB().equals(b) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            return result;
+        }
+
+        public List<Triple<A, B, C>> getAll() {
+            return list;
+        }
+
+        public void remove(int index) {
+            list.remove(index);
+        }
+
+        public void remove(Triple<A, B, C> triple) {
+            list.remove(triple);
+        }
+
+        public void removeByA(A a) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByB(B b) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getB().equals(b))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByC(C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getC().equals(c))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByAB(A a, B b) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getB().equals(b))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByAC(A a, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByBC(B b, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getB().equals(b) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void removeByABC(A a, B b, C c) {
+            List<Triple<A, B, C>> result = new ArrayList<>();
+            for (Triple<A, B, C> triple : list) {
+                if (triple.getA().equals(a) && triple.getB().equals(b) && triple.getC().equals(c))
+                    result.add(triple);
+            }
+            list.removeAll(result);
+        }
+
+        public void clear() {
+            list.clear();
+        }
+
+        public int size() {
+            return list.size();
+        }
+
+        public boolean isEmpty() {
+            return list.isEmpty();
+        }
+
+        public boolean contains(Triple<A, B, C> triple) {
+            return list.contains(triple);
+        }
+    }
+
+    public static class SavedInventory {
+        private String id;
+        private String name;
+        private long creation;
+        private String creator;
+        private boolean opOnly;
+        private ArrayList<ItemStack> content;
+        private ItemStack[] armor;
+
+        public SavedInventory(String id, String name, long creation, String creator,
+                              boolean opOnly, String content, String armor) {
+            this.id = id;
+            this.name = name;
+            this.creation = creation;
+            this.creator = creator;
+            this.opOnly = opOnly;
+            setRawContent(content);
+            setRawArmor(armor);
+        }
+
+        public SavedInventory(String id, String name, String creator, boolean opOnly,
+                              List<ItemStack> content, ItemStack[] armor) {
+            this.id = id;
+            this.name = name;
+            this.creation = new Date().getTime();
+            this.creator = creator;
+            this.opOnly = opOnly;
+            setContent(content);
+            setArmor(armor);
+        }
+
+        public static SavedInventory fromMap(Map<String, Object> map) {
+            try {
+                String id = (String) map.get("id");
+                String name = map.containsKey("name") ? (String) map.get("name") : null;
+                long creation = map.containsKey("creation") ? (long) map.get("creation") : 0;
+                String creator = map.containsKey("creator") ? (String) map.get("creator") : null;
+                boolean opOnly = map.containsKey("op-only") && (boolean) map.get("op-only");
+                String content = map.containsKey("content") ? (String) map.get("content") : null;
+                String armor = map.containsKey("armor") ? (String) map.get("armor") : null;
+                return new SavedInventory(id, name, creation, creator, opOnly, content, armor);
+            } catch (Exception e) {
+                System.out.println(Color.RED + "Error while loading an inventory: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("So the inventory will be ignored.\nStop modifying the configs... lol. ^^" + Color.RESET);
+                return null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "SavedInventory{" +
+                    "id='" + id + '\'' +
+                    ", name='" + name + '\'' +
+                    ", creation=" + creation +
+                    ", creator='" + creator + '\'' +
+                    ", opOnly=" + opOnly +
+                    ", content='" + content + '\'' +
+                    ", armor='" + Arrays.toString(armor) + '\'' +
+                    '}';
+        }
+
+        public LinkedHashMap<String, Object> toMap() {
+            LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+            map.put("id", id);
+            map.put("name", name);
+            map.put("creation", creation);
+            map.put("creator", creator);
+            map.put("op-only", opOnly);
+            map.put("content", getRawContent());
+            map.put("armor", getRawArmor());
+            return map;
+        }
+
+        public int count() {
+            int count = 0;
+            for (ItemStack item : Stream.concat(content.stream(), Arrays.stream(armor)).toArray(ItemStack[]::new)) {
+                if (item != null && item.getType() != Material.AIR) {
+                    count += item.getAmount();
+                }
+            }
+            return count;
+        }
+
+        /**
+         * It equips the player with the current inventory.
+         *
+         * @param p     The player to equip the kit to
+         * @param clear Whether to clear the player's inventory before equipping the kit.<br>
+         *              If <i style="color: #ffffff">false</i>, the content will be <b><i>ADDED</i></b> and <b><i>not PLACED</i></b>.
+         */
+        public void equip(Player p, boolean clear) {
+            PlayerInventory inv = p.getInventory();
+            if (clear) {
+                inv.clear();
+                inv.setArmorContents(new ItemStack[4]);
+            }
+            if (content != null) {
+                ItemStack[] items = content.stream().map(is -> is == null ?
+                        new ItemStack(Material.AIR) : is).toArray(ItemStack[]::new);
+                if (!clear)
+                    inv.addItem(items);
+                else
+                    for (int i = 0; i < items.length && i < 36; i++)
+                        inv.setItem(i, items[i]);
+            }
+            if (armor != null) {
+                for (int i = 0; i < armor.length && i < 4; i++) {
+                    if (armor[i] != null) {
+                        if (inv.getArmorContents()[i] != null && inv.getArmorContents()[i].getType() != Material.AIR) {
+                            inv.addItem(armor[i]);
+                        } else {
+                            ItemStack[] a = inv.getArmorContents().clone();
+                            a[i] = armor[i];
+                            inv.setArmorContents(a);
+                        }
+                    }
+                }
+            }
+        }
+
+        public ArrayList<ItemStack> getContent() {
+            return content;
+        }
+
+        public ItemStack[] getArmor() {
+            return armor;
+        }
+
+        public void setContent(Collection<ItemStack> content) {
+            this.content = content.stream().map(is -> is == null || is.getType() == Material.AIR ?
+                    null : is).collect(Collectors.toCollection(ArrayList::new));
+            if (this.content.stream().noneMatch(Objects::nonNull))
+                this.content = new ArrayList<>();
+        }
+
+        public void setArmor(ItemStack[] armor) {
+            this.armor = new ItemStack[4];
+            for (int i = 0; i < armor.length && i < 4; i++) {
+                this.armor[i] = armor[i] == null || armor[i].getType() == Material.AIR ? null : armor[i];
+            }
+            if (Arrays.stream(this.armor).noneMatch(Objects::nonNull))
+                this.armor = new ItemStack[0];
+        }
+
+        public String getRawContent() {
+            return itemStackArrayToBase64(content.toArray(new ItemStack[0]));
+        }
+
+        public String getRawArmor() {
+            return itemStackArrayToBase64(armor);
+        }
+
+        public void setRawContent(String content) {
+            setContent(new ArrayList<>(Arrays.asList(itemStackArrayFromBase64(content))));
+        }
+
+        public void setRawArmor(String armor) {
+            setArmor(itemStackArrayFromBase64(armor));
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public long getCreation() {
+            return creation;
+        }
+
+        public String getCreator() {
+            return creator;
+        }
+
+        public boolean isOpOnly() {
+            return opOnly;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setCreation(long creation) {
+            this.creation = creation;
+        }
+
+        public void setCreator(String creator) {
+            this.creator = creator;
+        }
+
+        public void setOpOnly(boolean opOnly) {
+            this.opOnly = opOnly;
+        }
+    }
+
+    public static class PermaEffect {
+        private PotionEffectType type;
+        private int amplifier;
+        private boolean showParticles;
+
+        public PermaEffect(PotionEffectType type, int amplifier, boolean showParticles) {
+            this.type = type;
+            this.amplifier = amplifier;
+            this.showParticles = showParticles;
+        }
+
+        public static PermaEffect fromMap(Map<String, Object> map) {
+            try {
+                String id = (String) map.get("type");
+                PotionEffectType type = PotionEffectType.getByName(id);
+                int amplifier = (int) map.get("amplifier");
+                boolean showParticles = (boolean) map.get("show-particles");
+                return new PermaEffect(type, amplifier, showParticles);
+            } catch (Exception e) {
+                System.out.println(Color.RED + "Error while loading an PermaEffect: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("So the object will be ignored.\nStop modifying the configs... lol. ^^" + Color.RESET);
+                return null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "PermaEffect{" +
+                    "type='" + type.getName() + '\'' +
+                    ", amplifier=" + amplifier +
+                    ", showParticles=" + showParticles +
+                    '}';
+        }
+
+        public LinkedHashMap<String, Object> toMap() {
+            LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+            map.put("type", type.getName());
+            map.put("amplifier", amplifier);
+            map.put("show-particles", showParticles);
+            return map;
+        }
+
+        public EffectItem toEffectItem() {
+            return new EffectItem(type, -1, amplifier, showParticles);
+        }
+
+        public PotionEffect toPotionEffect() {
+            return new PotionEffect(type, 1000000, amplifier, false, showParticles);
+        }
+
+        public PotionEffect toPotionEffect(int duration) {
+            return new PotionEffect(type, duration, amplifier, false, showParticles);
+        }
+
+        public PotionEffectType getType() {
+            return type;
+        }
+
+        public void setType(PotionEffectType type) {
+            this.type = type;
+        }
+
+        public int getAmplifier() {
+            return amplifier;
+        }
+
+        public void setAmplifier(int amplifier) {
+            this.amplifier = amplifier;
+        }
+
+        public boolean isShowingParticles() {
+            return showParticles;
+        }
+
+        public void setShowingParticles(boolean showParticles) {
+            this.showParticles = showParticles;
+        }
+    }
+
+
+    public static class EffectItem {
+        private PotionEffectType type;
+        private int duration;
+        private int amplifier;
+        private boolean showParticles;
+
+        public EffectItem(PotionEffectType type, int duration, int amplifier, boolean showParticles) {
+            this.type = type;
+            this.duration = duration;
+            this.amplifier = amplifier;
+            this.showParticles = showParticles;
+        }
+
+        public static EffectItem fromMap(Map<String, Object> map) {
+            try {
+                String id = (String) map.get("type");
+                PotionEffectType type = PotionEffectType.getByName(id);
+                int duration = (int) map.get("duration");
+                int amplifier = (int) map.get("amplifier");
+                boolean showParticles = (boolean) map.get("show-particles");
+                return new EffectItem(type, duration, amplifier, showParticles);
+            } catch (Exception e) {
+                System.out.println(Color.RED + "Error while loading an EffectItem: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("So the object will be ignored.\nStop modifying the configs... lol. ^^" + Color.RESET);
+                return null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "EffectItem{" +
+                    "type='" + type.getName() + '\'' +
+                    ", duration=" + duration +
+                    ", amplifier=" + amplifier +
+                    ", showParticles=" + showParticles +
+                    '}';
+        }
+
+        public LinkedHashMap<String, Object> toMap() {
+            LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+            map.put("type", type.getName());
+            map.put("duration", duration);
+            map.put("amplifier", amplifier);
+            map.put("show-particles", showParticles);
+            return map;
+        }
+
+        public PotionEffect toPotionEffect() {
+            return new PotionEffect(type, duration == -1 ? 1000000 : duration, amplifier, false, showParticles);
+        }
+
+        public PotionEffectType getType() {
+            return type;
+        }
+
+        public void setType(PotionEffectType type) {
+            this.type = type;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+
+        public void setDuration(int duration) {
+            this.duration = duration;
+        }
+
+        public int getAmplifier() {
+            return amplifier;
+        }
+
+        public void setAmplifier(int amplifier) {
+            this.amplifier = amplifier;
+        }
+
+        public boolean isShowingParticles() {
+            return showParticles;
+        }
+
+        public void setShowingParticles(boolean showParticles) {
+            this.showParticles = showParticles;
+        }
+    }
 
     /**
      * If the location is within the bounds of the two locations, return true
@@ -418,142 +1185,6 @@ public class Utils {
         }
     }
 
-    public static class MojangProfile {
-        private UUID uuid;
-        private String name;
-        private String rawTextures;
-        private String rawSignature;
-        private long timestamp;
-        private String profileId;
-        private String profileName;
-        private String skinURL;
-        private String capeURL;
-
-        public MojangProfile(UUID uuid, String name, String rawTextures, String rawSignature) {
-            this.uuid = uuid;
-            this.name = name;
-            this.rawTextures = rawTextures;
-            this.rawSignature = rawSignature;
-
-            timestamp = 0;
-            profileId = null;
-            profileName = null;
-            skinURL = null;
-            capeURL = null;
-
-            try {
-                JSONObject obj = (JSONObject) new JSONParser().parse(new String(Base64.getDecoder().decode(this.rawTextures)));
-                if (obj.containsKey("timestamp"))
-                    timestamp = Long.parseLong(obj.get("timestamp").toString());
-                if (obj.containsKey("profileId"))
-                    profileId = obj.get("profileId").toString();
-                if (obj.containsKey("profileName"))
-                    profileName = obj.get("profileName").toString();
-                if (obj.containsKey("textures")) {
-                    JSONObject textures = (JSONObject) obj.get("textures");
-                    if (textures.containsKey("SKIN")) {
-                        JSONObject skin = (JSONObject) textures.get("SKIN");
-                        if (skin.containsKey("url"))
-                            skinURL = skin.get("url").toString();
-                    }
-                    if (textures.containsKey("CAPE")) {
-                        JSONObject cape = (JSONObject) textures.get("CAPE");
-                        if (cape.containsKey("url"))
-                            capeURL = cape.get("url").toString();
-                    }
-                }
-            } catch (ParseException ignored) {
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "MojangProfile{" +
-                    "uuid=" + uuid +
-                    ", name='" + name + '\'' +
-                    ", rawTextures='" + rawTextures + '\'' +
-                    ", rawSignature='" + rawSignature + '\'' +
-                    ", timestamp=" + timestamp +
-                    ", profileId='" + profileId + '\'' +
-                    ", profileName='" + profileName + '\'' +
-                    ", skinURL='" + skinURL + '\'' +
-                    ", capeURL='" + capeURL + '\'' +
-                    '}';
-        }
-
-        public UUID getUuid() {
-            return uuid;
-        }
-
-        public void setUuid(UUID uuid) {
-            this.uuid = uuid;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getRawTextures() {
-            return rawTextures;
-        }
-
-        public void setRawTextures(String rawTextures) {
-            this.rawTextures = rawTextures;
-        }
-
-        public String getRawSignature() {
-            return rawSignature;
-        }
-
-        public void setRawSignature(String rawSignature) {
-            this.rawSignature = rawSignature;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(long timestamp) {
-            this.timestamp = timestamp;
-        }
-
-        public String getProfileId() {
-            return profileId;
-        }
-
-        public void setProfileId(String profileId) {
-            this.profileId = profileId;
-        }
-
-        public String getProfileName() {
-            return profileName;
-        }
-
-        public void setProfileName(String profileName) {
-            this.profileName = profileName;
-        }
-
-        public String getSkinURL() {
-            return skinURL;
-        }
-
-        public void setSkinURL(String skinURL) {
-            this.skinURL = skinURL;
-        }
-
-        public String getCapeURL() {
-            return capeURL;
-        }
-
-        public void setCapeURL(String capeURL) {
-            this.capeURL = capeURL;
-        }
-    }
-
     /**
      * Try to run the given runnable, and return true if it succeeded, or false if it failed.
      *
@@ -855,74 +1486,6 @@ public class Utils {
     }
 
     /**
-     * Pair is a generic class that holds two objects of any type.
-     */
-    public static class Pair<A, B> {
-        private A a;
-        private B b;
-
-        public Pair(A a, B b) {
-            this.a = a;
-            this.b = b;
-        }
-
-        public A getKey() {
-            return a;
-        }
-
-        public B getValue() {
-            return b;
-        }
-
-        public void setKey(A a) {
-            this.a = a;
-        }
-
-        public void setValue(B b) {
-            this.b = b;
-        }
-    }
-
-    /**
-     * Triple is a class that holds three objects of any type.
-     */
-    public static class Triple<A, B, C> {
-        private A a;
-        private B b;
-        private C c;
-
-        public Triple(A a, B b, C c) {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-        }
-
-        public A getA() {
-            return a;
-        }
-
-        public B getB() {
-            return b;
-        }
-
-        public C getC() {
-            return c;
-        }
-
-        public void setA(A a) {
-            this.a = a;
-        }
-
-        public void setB(B b) {
-            this.b = b;
-        }
-
-        public void setC(C c) {
-            this.c = c;
-        }
-    }
-
-    /**
      * It takes a string, hash it, and returns a long
      *
      * @param s The string to hash.
@@ -976,5 +1539,120 @@ public class Utils {
         return exp <= 352 ? Math.sqrt(exp + 9) - 3
                 : exp <= 1507 ? 81.0 / 10.0 + Math.sqrt(2.0 / 5.0 * (exp - 7839.0 / 40.0))
                 : 325.0 / 18.0 + Math.sqrt(2.0 / 9.0 * (exp - 54215.0 / 72.0));
+    }
+
+    /**
+     * It takes an array of ItemStacks and converts it to a Base64 String
+     *
+     * @param items The ItemStack array to be converted.
+     *
+     * @return A Base64 {@link String} of the ItemStack array.
+     */
+    public static String itemStackArrayToBase64(ItemStack[] items) throws IllegalStateException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+
+            // Write the size of the inventory
+            dataOutput.writeInt(items.length);
+
+            // Save every element in the list
+            for (ItemStack item : items) {
+                dataOutput.writeObject(item);
+            }
+
+            // Serialize that array
+            dataOutput.close();
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save item stacks.", e);
+        }
+    }
+
+    /**
+     * It decodes and returns a ItemStack array from a given Base64 String.
+     *
+     * @param data The Base64 String to decode.
+     *
+     * @return The decoded ItemStack array.
+     */
+    public static ItemStack[] itemStackArrayFromBase64(String data) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+            ItemStack[] items = new ItemStack[dataInput.readInt()];
+
+            // Read the serialized inventory
+            for (int i = 0; i < items.length; i++) {
+                items[i] = (ItemStack) dataInput.readObject();
+            }
+
+            dataInput.close();
+            return items;
+        } catch (/* IOException | ClassNotFoundException */ Exception e) {
+//            throw new IOException("Unable to decode class type.", e);
+            return new ItemStack[0];
+        }
+    }
+
+    @Deprecated
+    public static String itemStackToBase64(ItemStack item) throws IllegalStateException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+            dataOutput.writeObject(item);
+            dataOutput.close();
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save item stacks.", e);
+        }
+    }
+
+    @Deprecated
+    public static ItemStack itemStackFromBase64(String data) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+            ItemStack item = (ItemStack) dataInput.readObject();
+            dataInput.close();
+            return item;
+        } catch (/* IOException | ClassNotFoundException */ Exception e) {
+            return null;
+        }
+    }
+
+    public static String objectToBase64(Object o) throws IllegalStateException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+            dataOutput.writeObject(o);
+            dataOutput.close();
+            return Base64Coder.encodeLines(outputStream.toByteArray());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to save object.", e);
+        }
+    }
+
+    public static <T> T objectFromBase64(String data, Class<T> clazz) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
+            BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+            T o = (T) dataInput.readObject();
+            dataInput.close();
+            return o;
+        } catch (/* IOException | ClassNotFoundException */ Exception e) {
+            return null;
+        }
+    }
+
+    public static ExperienceOrb dropEXPOrb(int minSize, int maxSize, Location loc) {
+        return dropEXPOrb(new Random().nextInt(maxSize - minSize) + minSize, loc);
+    }
+
+    public static ExperienceOrb dropEXPOrb(int size, Location loc) {
+        ExperienceOrb orb = (ExperienceOrb) loc.getWorld().spawnEntity(loc, EntityType.EXPERIENCE_ORB);
+        orb.setExperience(size);
+        orb.setMetadata("exp", new FixedMetadataValue(Main.instance, size));
+        return orb;
     }
 }

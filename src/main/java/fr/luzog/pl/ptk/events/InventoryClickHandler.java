@@ -4,56 +4,49 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.utils.CustomNBT;
-import fr.luzog.pl.ptk.utils.Limits;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.Potion;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 public class InventoryClickHandler {
 
     @Events.Event
     public static void onClick(InventoryClickEvent e) {
-        if (e.getInventory().getType() == InventoryType.BREWING && e.getCurrentItem().getType() == Material.POTION
-                && (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT)) {
-            e.setCancelled(true);
-            return;
-        }
-
-        if (e.getInventory().getType() == InventoryType.BREWING
-                && (e.getCurrentItem().getType() == Material.GLOWSTONE_DUST || (e.getCurrentItem().getType() == Material.AIR
-                && e.getCursor() != null && e.getCursor().getType() == Material.POTION
-                && (e.getSlot() == 0 || e.getSlot() == 1 || e.getSlot() == 2)))
-                && GManager.getCurrentGame() != null && GManager.getCurrentGame().getLimits() != null
-                && GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false) != null) {
-            Limits lim = GManager.getCurrentGame().getLimits();
-            HashMap<PotionEffectType, Integer> p = new HashMap<>();
-            for (ItemStack is : Arrays.asList(e.getCursor(), e.getInventory().getItem(0),
-                    e.getInventory().getItem(1), e.getInventory().getItem(2)))
-                if (is != null && is.getType() == Material.POTION) {
-                    Potion.fromItemStack(is).getEffects().forEach(pe -> {
-                        if (p.containsKey(pe.getType()))
-                            p.replace(pe.getType(), Math.max(pe.getAmplifier(), p.get(pe.getType())));
-                        else
-                            p.put(pe.getType(), pe.getAmplifier());
-                    });
-                }
-            for (PotionEffectType pet : p.keySet())
-                if (lim.getPotion().containsKey(pet) && p.get(pet) + 1 > lim.getPotion().get(pet)) {
-                    e.setCancelled(true);
-                    return;
-                }
-        }
+// DEPRECATED: Potion Limitations (Not needed anymore)
+//        if (e.getInventory().getType() == InventoryType.BREWING
+//                && e.getCurrentItem() != null && e.getCurrentItem().getType() == Material.POTION
+//                && (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT)) {
+//            e.setCancelled(true);
+//            return;
+//        }
+//        if (e.getInventory().getType() == InventoryType.BREWING
+//                && (e.getCurrentItem().getType() == Material.GLOWSTONE_DUST || (e.getCurrentItem().getType() == Material.AIR
+//                && e.getCursor() != null && e.getCursor().getType() == Material.POTION
+//                && (e.getSlot() == 0 || e.getSlot() == 1 || e.getSlot() == 2)))
+//                && GManager.getCurrentGame() != null && GManager.getCurrentGame().getLimits() != null
+//                && GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false) != null) {
+//            Limits lim = GManager.getCurrentGame().getLimits();
+//            HashMap<PotionEffectType, Integer> p = new HashMap<>();
+//            for (ItemStack is : Arrays.asList(e.getCursor(), e.getInventory().getItem(0),
+//                    e.getInventory().getItem(1), e.getInventory().getItem(2)))
+//                if (is != null && is.getType() == Material.POTION) {
+//                    Potion.fromItemStack(is).getEffects().forEach(pe -> {
+//                        if (p.containsKey(pe.getType()))
+//                            p.replace(pe.getType(), Math.max(pe.getAmplifier(), p.get(pe.getType())));
+//                        else
+//                            p.put(pe.getType(), pe.getAmplifier());
+//                    });
+//                }
+//            for (PotionEffectType pet : p.keySet())
+//                if (lim.getPotion().containsKey(pet) && p.get(pet) + 1 > lim.getPotion().get(pet)) {
+//                    e.setCancelled(true);
+//                    return;
+//                }
+//        }
 
         if (GManager.getCurrentGame() != null && e.getInventory().getType() == InventoryType.ANVIL
                 && e.getRawSlot() == 2 && e.getCurrentItem() != null) {
@@ -75,11 +68,11 @@ public class InventoryClickHandler {
             }
         }
 
-        List<GPlayer> fps = GManager.getGlobalPlayer(e.getWhoClicked().getName());
-
-        for (GPlayer fp : fps)
-            if (fp != null)
-                fp.getStats().increaseClicksOnInventory();
+        GPlayer gp = null;
+        if (GManager.getCurrentGame() != null
+                && (gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false)) != null) {
+            gp.getStats().increaseClicksOnInventory();
+        }
 
         if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR)
             if (e.getWhoClicked() instanceof Player) {
@@ -94,7 +87,9 @@ public class InventoryClickHandler {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (!s.equalsIgnoreCase("null"))
+                                if (s.equalsIgnoreCase("exit"))
+                                    e.getWhoClicked().closeInventory();
+                                else if (!s.equalsIgnoreCase("null"))
                                     ((Player) e.getWhoClicked()).performCommand(s);
                             }
                         }.runTaskLater(Main.instance, i);
@@ -105,7 +100,9 @@ public class InventoryClickHandler {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (!s.equalsIgnoreCase("null"))
+                                if (s.equalsIgnoreCase("exit"))
+                                    e.getWhoClicked().closeInventory();
+                                else if (!s.equalsIgnoreCase("null"))
                                     ((Player) e.getWhoClicked()).performCommand(s);
                             }
                         }.runTaskLater(Main.instance, i);
@@ -116,7 +113,9 @@ public class InventoryClickHandler {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (!s.equalsIgnoreCase("null"))
+                                if (s.equalsIgnoreCase("exit"))
+                                    e.getWhoClicked().closeInventory();
+                                else if (!s.equalsIgnoreCase("null"))
                                     ((Player) e.getWhoClicked()).performCommand(s);
                             }
                         }.runTaskLater(Main.instance, i);
@@ -127,7 +126,9 @@ public class InventoryClickHandler {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (!s.equalsIgnoreCase("null"))
+                                if (s.equalsIgnoreCase("exit"))
+                                    e.getWhoClicked().closeInventory();
+                                else if (!s.equalsIgnoreCase("null"))
                                     ((Player) e.getWhoClicked()).performCommand(s);
                             }
                         }.runTaskLater(Main.instance, i);
@@ -138,7 +139,9 @@ public class InventoryClickHandler {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                if (!s.equalsIgnoreCase("null"))
+                                if (s.equalsIgnoreCase("exit"))
+                                    e.getWhoClicked().closeInventory();
+                                else if (!s.equalsIgnoreCase("null"))
                                     ((Player) e.getWhoClicked()).performCommand(s);
                             }
                         }.runTaskLater(Main.instance, i);

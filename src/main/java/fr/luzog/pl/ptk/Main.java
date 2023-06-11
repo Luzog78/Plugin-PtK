@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    public static final Object VERSION = "Alpha 1.4";
+    public static final Object VERSION = "Alpha 3.8.10";
     public static final String CMD = "ptk";
 
     private static final int sideLength = 27;
@@ -35,6 +35,7 @@ public class Main extends JavaPlugin implements Listener {
     public static World world = null, nether = null, end = null;
 
     public static Config.Globals globalConfig;
+    public static Config.Kit kitConfig;
 
     public static boolean customCrafts, customCraftingTable, customLootingBlocksSystem, customLootingMobsSystem;
 
@@ -48,9 +49,10 @@ public class Main extends JavaPlugin implements Listener {
         globalConfig = new Config.Globals("Globals.yml").load()
                 .setVersion(VERSION, true)
                 .setLang("fr-FR", false)
-                .setSeason("Protect The King", false)
+                .setSeason("ProtectTheKing", false)
                 .setIp("play.azion.fr", false)
                 .setOrga(Arrays.asList("Mathis_Bruel", "Luzog78"), false)
+                .setSpawnProtectionDuration(60, false)
                 .setWorlds("world", "world_nether", "world_the_end", false)
                 .setCustomVanillaCraftsActivated(false, false)
                 .setCustomCraftingTableActivated(true, false)
@@ -59,16 +61,31 @@ public class Main extends JavaPlugin implements Listener {
                 .save()
                 .load(); // Reload the config for the next lines
 
-        SEASON = globalConfig.getSeason().replace(" ", "").toUpperCase();
+        kitConfig = new Config.Kit("Kit.yml").load()
+                .setInfos(Collections.singletonList(new HashMap<Object, Object>() {{
+                    put("id", "Identifier string (must be unique)");
+                    put("name", "Display name of the kit (can be colored or null)");
+                    put("creation", "Creation timestamp (in milliseconds)");
+                    put("creator", "Creator name (can be null)");
+                    put("op-only", "Bolean value of the kit being only for OPs");
+                    put("content", "Base64 encoded ItemStack array of the kit content (max length must be 36)");
+                    put("armor", "Base64 encoded ItemStack array of the kit armor (length must be 4)");
+                }}), true)
+                .setKits(new ArrayList<>(), false)
+                .save()
+                .load(); // Reload the config for the next lines
+
+        SEASON = globalConfig.getSeason().replace(" ", "");
         IP = globalConfig.getIp();
         ORGA = new ArrayList<>(globalConfig.getOrga());
+
         centerLength = 9 + SEASON.length();
 
         SYS_PREFIX = "§8[§l§4SYSTEM§r§8] §r";
-        PREFIX = "§8§l[§6" + SEASON + "§8§l] >> §7";
+        PREFIX = "§8§l[§2" + SEASON + "§8§l] >> §7";
 
         String side = String.format("%" + sideLength + "s", "").replace(" ", "-");
-        HEADER = "§9" + side + "-- §8[ §6" + SEASON + " §8] §9-" + side + "§r";
+        HEADER = "§9" + side + "-- §8[ §2" + SEASON + " §8] §9-" + side + "§r";
         FOOTER = String.format("§9%" + (63 + SEASON.length()) + "s§r", "").replace(" ", "-");
 
         REBOOT_KICK_MESSAGE = Main.HEADER + "\n\n§cRedémarrage du serveur.\n§6Reconnectez vous dans moins d'une minute !\n\n" + Main.FOOTER;

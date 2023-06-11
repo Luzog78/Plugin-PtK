@@ -1,9 +1,13 @@
 package fr.luzog.pl.ptk.events;
 
 import fr.luzog.pl.ptk.game.GManager;
+import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
+import fr.luzog.pl.ptk.game.GTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerChatEvent;
+
+import java.util.Objects;
 
 public class PlayerChatHandler {
 
@@ -20,6 +24,12 @@ public class PlayerChatHandler {
         boolean teamChat = !e.getMessage().startsWith("!");
         int sub = e.getMessage().startsWith("!") ? 1 : 0;
 
+        if (!fp.hasPermission(teamChat ? GPermissions.Type.CHAT_TEAM : GPermissions.Type.CHAT_GLOBAL,
+                e.getPlayer().getLocation())) {
+            e.getPlayer().sendMessage("§cVous n'avez pas la permission de parler en §6" + (teamChat ? "équipe" : "global") + "§c.");
+            return;
+        }
+
         String format = (teamChat ? "§7[§aT§7]  §f" : "")
                 + fp.getDisplayName() + "§8  >>  §7"
                 + e.getMessage().substring(sub).replace("&", "§").replace("§§", "&");
@@ -31,8 +41,8 @@ public class PlayerChatHandler {
                     .forEach(p -> p.getPlayer().sendMessage(format));
         else
             GManager.getCurrentGame().getPlayers().forEach(p -> {
-                if (p != null && p.getPlayer() != null && p.getTeam() != null && (p.getTeam().getId().equalsIgnoreCase(fp.getTeamId())
-                        || p.getTeam().getId().equals(fp.getManager().getGods().getId())))
+                if (p != null && p.getPlayer() != null && (Objects.equals(p.getTeamId(), fp.getTeamId())
+                        || Objects.equals(p.getTeamId(), GTeam.GODS_ID)))
                     p.getPlayer().sendMessage(format);
             });
 

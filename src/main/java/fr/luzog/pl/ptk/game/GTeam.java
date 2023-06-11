@@ -1,16 +1,11 @@
 package fr.luzog.pl.ptk.game;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.game.role.GRKing;
 import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Config;
-import fr.luzog.pl.ptk.utils.SpecialChars;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.*;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Team;
 
@@ -36,6 +31,8 @@ public class GTeam {
                 .setPrefix(prefix, true)
                 .setColor(color.name(), true)
                 .setRadius(radius, true)
+                .setBreakBonusClaimed(breakBonus, true)
+                .setBreakBonusLocation(breakBonusLocation, true)
                 .setEliminated(isEliminated, true)
                 .setEliminators(eliminators, true)
                 .setOldPlayers(oldPlayers, true)
@@ -51,8 +48,9 @@ public class GTeam {
 
     private String id, name, prefix, eliminators;
     private ChatColor color;
-    private Location spawn;
+    private Location spawn, breakBonusLocation;
     private double radius;
+    private boolean breakBonus;
     private ArrayList<String> oldPlayers;
     private boolean isEliminated;
 
@@ -67,7 +65,9 @@ public class GTeam {
         this.eliminators = null;
         this.color = ChatColor.WHITE;
         this.spawn = new Location(Main.world, 0, 0, 0);
+        this.breakBonusLocation = null;
         this.radius = 0;
+        this.breakBonus = false;
         this.oldPlayers = new ArrayList<>();
         this.isEliminated = false;
         this.permissions = new GPermissions(GPermissions.Definition.DEFAULT);
@@ -76,15 +76,17 @@ public class GTeam {
     }
 
     public GTeam(String id, String name, String prefix, String eliminators, ChatColor color, Location spawn,
-                 Location plunderLoc, double radius, ArrayList<String> oldPlayers, boolean isEliminated,
-                 long defaultEliminationCooldown, long eliminationCooldown, GPermissions permissions) {
+                 Location breakBonusLocation, double radius, boolean breakBonus, ArrayList<String> oldPlayers,
+                 boolean isEliminated, GPermissions permissions) {
         this.id = id;
         this.name = name;
         this.prefix = prefix;
         this.eliminators = eliminators;
         this.color = color;
         this.spawn = spawn;
+        this.breakBonusLocation = breakBonusLocation;
         this.radius = radius;
+        this.breakBonus = breakBonus;
         this.oldPlayers = oldPlayers == null ? new ArrayList<>() : oldPlayers;
         this.isEliminated = isEliminated;
         this.permissions = permissions;
@@ -101,31 +103,40 @@ public class GTeam {
         });
     }
 
-    public void eliminate(String eliminators, boolean broadcast, boolean checkForTheOther, boolean save) {
-        setEliminators(eliminators, false);
+    public void eliminate(boolean broadcast, boolean checkForTheOther, boolean save) {
         isEliminated = true;
         getPlayers().forEach(p -> {
             oldPlayers.add(p.getName());
-            if (broadcast && p.getPlayer() != null)
+            if (broadcast && p.getPlayer() != null) {
                 p.getPlayer().sendMessage(Main.PREFIX + "§4§lVous avez été éliminé de la partie.");
+            }
             p.leaveTeam(false);
-            p.setTeam(GTeam.SPECS_ID, true);
+            p.setTeam(GTeam.SPECS_ID, save);
             if (p.getPlayer() != null) {
                 p.getPlayer().setGameMode(GameMode.SPECTATOR);
-                if (getManager().getSpawn().getSpawn() != null)
+                if (getManager().getSpawn().getSpawn() != null) {
                     p.getPlayer().teleport(getManager().getSpawn().getSpawn());
-                else if (getManager().getLobby().getSpawn() != null)
+                } else if (getManager().getLobby().getSpawn() != null) {
                     p.getPlayer().teleport(getManager().getLobby().getSpawn());
+                }
             }
         });
         Broadcast.announcement(Main.PREFIX + "§r§lLa team " + getName() + "§r a été !éliminée §lde la partie."
                 + "\nDonc !" + oldPlayers.size() + " !joueurs ont été éliminés.");
-        if (save && getManager() != null)
+        if (save && getManager() != null) {
             saveToConfig(getManager().getId(), false);
+        }
         if (checkForTheOther) {
-            long teams = getManager().getTeams().stream().filter(t -> !t.getId().equals(GODS_ID)
-                    && !t.getId().equals(SPECS_ID) && !t.isEliminated()).count();
-            if (teams == 0 || teams == 1)
+            int teams = 0;
+            for (GTeam t : getManager().getParticipantsTeams()) {
+                if (!t.isEliminated() && t.getPlayers().size() == 0) {
+                    t.eliminate(true, false, true);
+                }
+                if (!t.isEliminated()) {
+                    teams++;
+                }
+            }
+            if (teams <= 1)
                 getManager().end();
             else
                 Broadcast.log("§eIl reste !" + teams + " !équipes en jeu !");
@@ -340,6 +351,20 @@ public class GTeam {
         }
     }
 
+    public Location getBreakBonusLocation() {
+        return breakBonusLocation;
+    }
+
+    public void setBreakBonusLocation(Location breakBonusLocation, boolean save) {
+        this.breakBonusLocation = new Location(breakBonusLocation.getWorld(), breakBonusLocation.getBlockX(),
+                breakBonusLocation.getBlockY(), breakBonusLocation.getBlockZ());
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setBreakBonusLocation(breakBonusLocation, true).save();
+        }
+    }
+
     public double getRadius() {
         return radius;
     }
@@ -353,8 +378,65 @@ public class GTeam {
         }
     }
 
+    public boolean isBreakBonusClaimed() {
+        return breakBonus;
+    }
+
+    public void setBreakBonusClaimed(boolean breakBonus, boolean save) {
+        this.breakBonus = breakBonus;
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setBreakBonusClaimed(breakBonus, true).save();
+        }
+    }
+
     public ArrayList<String> getOldPlayers() {
         return oldPlayers;
+    }
+
+    public String getOldPlayer(int i) {
+        return oldPlayers.get(i);
+    }
+
+    public void addOldPlayer(String name, boolean save) {
+        if (oldPlayers.contains(name))
+            return;
+        oldPlayers.add(name);
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setOldPlayers(oldPlayers, true).save();
+        }
+    }
+
+    public void removeOldPlayer(String name, boolean save) {
+        if (!oldPlayers.contains(name))
+            return;
+        oldPlayers.remove(name);
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setOldPlayers(oldPlayers, true).save();
+        }
+    }
+
+    public void removeOldPlayer(int i, boolean save) {
+        oldPlayers.remove(i);
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setOldPlayers(oldPlayers, true).save();
+        }
+    }
+
+    public void clearOldPlayers(boolean save) {
+        oldPlayers.clear();
+        if (save && getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setOldPlayers(oldPlayers, true).save();
+        }
     }
 
     public void setOldPlayers(ArrayList<String> oldPlayers, boolean save) {
@@ -412,6 +494,14 @@ public class GTeam {
             player.leaveTeam(true);
         else
             throw new GException.PlayerNotInTeamException(id, player.getName());
+    }
+
+    public List<GPlayer> getKings() {
+        return getPlayers().stream().filter(p -> p.getRoleInfo() instanceof GRKing.Info).collect(Collectors.toList());
+    }
+
+    public boolean hasKing() {
+        return getPlayers().stream().anyMatch(p -> p.getRoleInfo() instanceof GRKing.Info);
     }
 
     public boolean isEliminated() {

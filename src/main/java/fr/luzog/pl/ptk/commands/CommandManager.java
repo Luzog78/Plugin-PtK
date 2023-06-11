@@ -2,16 +2,17 @@ package fr.luzog.pl.ptk.commands;
 
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Admin.*;
+import fr.luzog.pl.ptk.commands.Chat.Msg;
+import fr.luzog.pl.ptk.commands.Chat.Reply;
 import fr.luzog.pl.ptk.commands.Cheat.*;
 import fr.luzog.pl.ptk.commands.Fun.*;
-import fr.luzog.pl.ptk.commands.Game.GCmd;
+import fr.luzog.pl.ptk.commands.Game.GCMainCommand;
 import fr.luzog.pl.ptk.commands.Location.Tp;
 import fr.luzog.pl.ptk.commands.Other.Ad;
 import fr.luzog.pl.ptk.commands.Other.Test;
-import fr.luzog.pl.ptk.commands.Server.R;
 import fr.luzog.pl.ptk.commands.Utils.Craft;
 import fr.luzog.pl.ptk.commands.Utils.EnderChest;
-import fr.luzog.pl.ptk.commands.Utils.InputText;
+import fr.luzog.pl.ptk.commands.Utils.InputGUIAndTools;
 import fr.luzog.pl.ptk.commands.Utils.Trash;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandExecutor;
@@ -24,6 +25,7 @@ public class CommandManager {
 
     private static final ArrayList<CommandItem> commands = new ArrayList<>(Arrays.asList(
             // Admin
+            new CommandItem(new Ban(), "ban"),
             new CommandItem(new Execute(), "execute"),
             new CommandItem(new Gm(), "gm"),
             new CommandItem(new Gm(GameMode.SURVIVAL), "gm0"),
@@ -31,10 +33,16 @@ public class CommandManager {
             new CommandItem(new Gm(GameMode.ADVENTURE), "gm2"),
             new CommandItem(new Gm(GameMode.SPECTATOR), "gm3"),
             new CommandItem(new InvSee(), "invsee"),
+            new CommandItem(new Kick(), "kick"),
+            new CommandItem(new Pardon(), "pardon"),
             new CommandItem(new Vanish(), "vanish"),
             new CommandItem(new Weather(Weather.WeatherType.SUN), "sun"),
             new CommandItem(new Weather(Weather.WeatherType.RAIN), "rain"),
             new CommandItem(new Weather(Weather.WeatherType.THUNDER), "thunder"),
+
+            // Chat
+            new CommandItem(new Msg(), "msg"),
+            new CommandItem(new Reply(), "reply"),
 
             // Cheat
             new CommandItem(new Enchant(), "ench"),
@@ -56,7 +64,7 @@ public class CommandManager {
             new CommandItem(new Shuffle(), "shuffle"),
 
             // Game
-            new CommandItem(new GCmd(), Main.CMD),
+            new CommandItem(new GCMainCommand(), Main.CMD),
 
             // Location
             new CommandItem(new Tp(), "tp"),
@@ -66,12 +74,11 @@ public class CommandManager {
             new CommandItem(new Test(), "test"),
 
             // Server
-            new CommandItem(new R(), "r"),
 
             // Utils
             new CommandItem(new Craft(), "craft"),
             new CommandItem(new EnderChest(), "ec"),
-            new CommandItem(new InputText(), "input"),
+            new CommandItem(new InputGUIAndTools(), "input"),
             new CommandItem(new Trash(), "trash")
     ));
 

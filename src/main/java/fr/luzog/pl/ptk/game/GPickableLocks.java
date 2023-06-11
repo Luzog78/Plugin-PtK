@@ -35,7 +35,7 @@ public class GPickableLocks {
 
     public static final String LOCK_KEY = "§d§l-=[ §k0§d §nPasse Partout§d §l§k0§d§l ]=-",
             LOCK_ID_TAG = "gameLockIdTag", RARITY_TAG = "gameRarityTag";
-    public static final int maxDistance = 4;
+    public static final int maxDistance = 5;
     public static double RADIUS = 15;
 
     public static class Lock {
@@ -325,7 +325,8 @@ public class GPickableLocks {
                 return;
 
             GPickableLocks pickableLocks = gPlayer.getManager().getPickableLocks();
-            if (!pickableLocks.isPickableLock(b.getLocation()) || pickableLocks.getLock(b.getMetadata(LOCK_ID_TAG).get(0).asString()) == null) {
+            if (!pickableLocks.isPickableLock(b.getLocation()) || b.hasMetadata(LOCK_ID_TAG)
+                    || pickableLocks.getLock(b.getMetadata(LOCK_ID_TAG).get(0).asString()) == null) {
                 if (is != null && new CustomNBT(is).hasKey(RARITY_TAG) && new CustomNBT(is).getString(RARITY_TAG).equals("admin"))
                     if (a == RIGHT_CLICK_BLOCK) {
                         p.sendMessage("§cCe bloc n'est pas un coffre crochetable." +

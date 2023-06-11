@@ -167,7 +167,7 @@ public class GuiTeams {
                                 "§7/" + Main.CMD + " teams create §f<id> §8[§f<options>§8]"
                         )
                         .setLeftRightCommandOnClick(
-                                "input 2 " + Main.CMD + " teams create %s %s%n" + Main.CMD + " teams",
+                                "input " + Main.CMD + " teams create %s %s%n" + Main.CMD + " teams",
                                 Main.CMD + " teams"
                         )
                         .setCantClickOn(true)
@@ -215,7 +215,7 @@ public class GuiTeams {
                         "§7/" + Main.CMD + " teams " + team.getId() + " options --d §f<displayName>"
                 )
                 .setLeftRightCommandOnClick(
-                        "input 1 " + Main.CMD + " teams " + team.getId() + " options --d %s%n" + refresh,
+                        "input " + Main.CMD + " teams " + team.getId() + " options --d %s%n" + refresh,
                         refresh
                 )
                 .setCantClickOn(true)
@@ -230,7 +230,7 @@ public class GuiTeams {
                         "§7/" + Main.CMD + " teams " + team.getId() + " options --p §f<prefix>"
                 )
                 .setLeftRightCommandOnClick(
-                        "input 1 " + Main.CMD + " teams " + team.getId() + " options --p %s%n" + refresh,
+                        "input " + Main.CMD + " teams " + team.getId() + " options --p %s%n" + refresh,
                         refresh
                 )
                 .setCantClickOn(true)
@@ -280,7 +280,7 @@ public class GuiTeams {
                                 + " " + nLoc.getYaw() + " " + nLoc.getPitch()
                                 + " " + seer.getWorld().getName() + "\n" + refresh
                 )
-                .setMiddleCommandOnClick("input 6 " + Main.CMD + " teams " + team.getId() + " options --s %s %s %s %s %s %s%n" + refresh)
+                .setMiddleCommandOnClick("input " + Main.CMD + " teams " + team.getId() + " options --s %l{x,y,z,yw,pi,w}%n" + refresh)
                 .build());
         inv.setItem(Utils.posOf(1, 4), Items.builder(Material.FENCE)
                 .setName("§6Rayon : §f" + team.getRadius())
@@ -298,7 +298,7 @@ public class GuiTeams {
                         Main.CMD + " teams " + team.getId() + " options --r " + (team.getRadius() == 0 ? 0.5 : team.getRadius() + 1) + "\n" + refresh,
                         Main.CMD + " teams " + team.getId() + " options --r " + (team.getRadius() > 0.5 ? team.getRadius() - 1 : 0) + "\n" + refresh
                 )
-                .setMiddleCommandOnClick("input 1 " + Main.CMD + " teams " + team.getId() + " options --r %s%n" + refresh)
+                .setMiddleCommandOnClick("input " + Main.CMD + " teams " + team.getId() + " options --r %f%n" + refresh)
                 .build());
 
 
@@ -324,7 +324,7 @@ public class GuiTeams {
                         Main.CMD  + " teams " + team.getId() + " altar\n" + refresh,
                         refresh,
                         Main.CMD + " teams " + team.getId() + " wall 1 cobblestone\n" + refresh,
-                        "input 2 " + Main.CMD + " teams " + team.getId() + " wall %s %s%n" + refresh
+                        "input " + Main.CMD + " teams " + team.getId() + " wall %d %s%n" + refresh
                 )
                 .build());
         inv.setItem(Utils.posOf(7, 4), Items.builder(Items.red())

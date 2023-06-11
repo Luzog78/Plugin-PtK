@@ -6,7 +6,7 @@
 
 # Plugin Infos
 name: PtK
-version: a1.4
+version: a2.0
 description: "\n\n    §6------------[ §9§lPtK §6]------------§r\n      This plugin is the New PtK\n          Server's Plugin.§r\n       Version 1.0.0 - Made by Luzog78§r\n           In Nov. 2022§r\n        Enjoy !\n    §6-----------------------------\n \n"
 
 # Authors Infos
@@ -45,10 +45,6 @@ commands:
   execute:
     description: Force to execute command
     permission: game.admin.execute
-  invsee:
-    aliases: [ seeinventory ]
-    description: See an inventory
-    permission: game.admin.invsee
   sun:
     description: Change Weather.
     permission: game.admin.sun
@@ -78,10 +74,29 @@ commands:
     aliases: [ g3 ]
     description: Change GameMode
     permission: game.admin.gm3
+  invsee:
+    aliases: [ seeinventory ]
+    description: See an inventory
+    permission: game.admin.invsee
+  kick:
+    description: Kick a player
+  ban:
+    description: Ban a player
+  pardon:
+    aliases: [ unban ]
+    description: Unban a player
   vanish:
     aliases: [ v ]
     description: Toggle Vanish Mod
     permission: game.admin.vanish
+
+  # Chat
+  msg:
+    aliases: [ m, tell, t, whisper, w, pm, message ]
+    description: Send a private message
+  reply:
+    aliases: [ r, rep, repondre ]
+    description: Reply to a private message
 
   # Cheat
   ench:
@@ -164,11 +179,6 @@ commands:
 
 
   # Server's Commands
-  r:
-    description: Aliases [reload, rl, r]
-    permission: bukkit.command.reload
-  #  save:
-  #    description: Save and Reload the Config
 
 
 

@@ -1,16 +1,24 @@
 package fr.luzog.pl.ptk.game;
 
 import fr.luzog.pl.ptk.commands.Admin.Vanish;
+import fr.luzog.pl.ptk.game.role.GRKing;
+import fr.luzog.pl.ptk.game.role.GRKnight;
+import fr.luzog.pl.ptk.game.role.GRole;
+import fr.luzog.pl.ptk.utils.Color;
 import fr.luzog.pl.ptk.utils.Config;
 import fr.luzog.pl.ptk.utils.PlayerStats;
+import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Objects;
-import java.util.UUID;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GPlayer {
 
@@ -23,7 +31,9 @@ public class GPlayer {
 
                 .setLastUuid(lastUuid, true)
                 .setTeam(teamId, true)
+                .setRoleInfo(roleInfo, true)
                 .setCompass(compass, true)
+                .setInventories(new ArrayList<>(), false)
                 .setStats(stats, true)
                 .setPermissions(personalPermissions, true)
 
@@ -74,18 +84,22 @@ public class GPlayer {
     private UUID lastUuid;
 
     private String teamId;
+    private GRole.Info roleInfo;
     private Compass compass;
 
     private PlayerStats stats;
+
     private GPermissions personalPermissions;
 
     private GListener.PersonalListener personalListener;
 
-    public GPlayer(@Nullable String name, @Nullable PlayerStats stats, @Nullable GPermissions personalPermissions) {
+    public GPlayer(@Nullable String name, @Nullable GRole.Info roleInfo,
+                   @Nullable PlayerStats stats, @Nullable GPermissions personalPermissions) {
         this.name = name;
         this.lastUuid = null;
 
         this.teamId = null;
+        this.roleInfo = roleInfo == null ? new GRKnight.Info() : roleInfo;
         this.compass = null;
 
         this.stats = stats == null ? new PlayerStats() : stats;
@@ -94,11 +108,13 @@ public class GPlayer {
         this.personalListener = new GListener.PersonalListener(this);
     }
 
-    public GPlayer(String name, UUID lastUuid, String teamId, Compass compass, PlayerStats stats, GPermissions personalPermissions) {
+    public GPlayer(String name, UUID lastUuid, String teamId, GRole.Info roleInfo, Compass compass,
+                   PlayerStats stats, GPermissions personalPermissions) {
         this.name = name;
         this.lastUuid = lastUuid;
 
         this.teamId = teamId;
+        this.roleInfo = roleInfo;
         this.compass = compass;
 
         this.stats = stats == null ? new PlayerStats() : stats;
@@ -176,8 +192,9 @@ public class GPlayer {
         if (getTeam() != null && getTeam().isInside(loc, incrementTeamRadius))
             return getTeam().getZone(true, incrementTeamRadius);
         for (GTeam team : getManager().getTeams())
-            if (team.isInside(loc, incrementTeamRadius))
-                return team.getZone(false, incrementTeamRadius);
+            if (!team.isEliminated())
+                if (team.isInside(loc, incrementTeamRadius))
+                    return team.getZone(false, incrementTeamRadius);
         for (GZone zone : getManager().getNormalZones())
             if (zone.isInside(loc))
                 return zone;
@@ -224,6 +241,27 @@ public class GPlayer {
             if (!getConfig(getManager().getId()).exists())
                 saveToConfig(getManager().getId(), true);
             getConfig(getManager().getId()).load().setTeam(null, true).save();
+        }
+    }
+
+    public GRole.Info getRoleInfo() {
+        return roleInfo;
+    }
+
+    public <T> T getRoleInfoAs(Class<T> type) {
+        return (T) roleInfo;
+    }
+
+    public void setRoleInfo(GRole.Info roleInfo, boolean save) {
+        try {
+            this.roleInfo = roleInfo == null ? (GRole.Info) GRole.Roles.DEFAULT.getInfoClass().newInstance() : roleInfo;
+            if (save && getManager() != null) {
+                if (!getConfig(getManager().getId()).exists())
+                    saveToConfig(getManager().getId(), true);
+                getConfig(getManager().getId()).load().setRoleInfo(roleInfo, true).save();
+            }
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -288,7 +326,19 @@ public class GPlayer {
         if (getManager() != null) {
             if (!getConfig(getManager().getId()).exists())
                 saveToConfig(getManager().getId(), true);
-            getConfig(getManager().getId()).load().setStats(stats, true).save();
+            Config.Player config = getConfig(getManager().getId()).load();
+            PlayerStats stats = config.getStats();
+            for (Field f : PlayerStats.class.getDeclaredFields()) {
+                f.setAccessible(true);
+                try {
+                    if (!Objects.equals(f.get(stats), f.get(this.stats))) {
+                        config.setStats(this.stats, true).save();
+                        break;
+                    }
+                } catch (IllegalAccessException ignored) {
+                }
+                f.setAccessible(false);
+            }
         }
     }
 
@@ -317,5 +367,103 @@ public class GPlayer {
     public void setPersonalListener(GListener.PersonalListener personalListener) {
         this.personalListener = personalListener;
         this.personalListener.setGPlayer(this);
+    }
+
+    public void saveInventory(@Nullable String id, @Nullable String name, @Nullable String creator, PlayerInventory inventory) {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+            inventories.add(new Utils.SavedInventory(id + "", name, creator, false,
+                    Arrays.asList(inventory.getContents()), inventory.getArmorContents()));
+            getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+        }
+    }
+
+    public Utils.SavedInventory getInventory(String id, int idx, boolean delete) {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+            try {
+                Utils.SavedInventory inventory = inventories.stream().filter(inv -> inv.getId().equals(id + ""))
+                        .collect(Collectors.toList()).get(idx);
+                if (delete && inventory != null) {
+                    inventories.remove(inventory);
+                    getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+                }
+                return inventory;
+            } catch (IndexOutOfBoundsException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public Utils.SavedInventory getLastInventory(String id, boolean delete) {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+            Utils.SavedInventory inventory = inventories.stream().filter(inv -> inv.getId().equals(id + ""))
+                    .max(Comparator.comparing(Utils.SavedInventory::getCreation)).orElse(null);
+            if (delete && inventory != null) {
+                inventories.remove(inventory);
+                getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+            }
+            return inventory;
+        }
+        return null;
+    }
+
+    public boolean deleteInventory(String id, int idx) {
+        try {
+            List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+            Utils.SavedInventory inventory = inventories.stream().filter(inv -> inv.getId().equals(id + ""))
+                    .collect(Collectors.toList()).get(idx);
+            inventories.remove(inventory);
+            getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+            return true;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
+    public boolean deleteLastInventory(String id) {
+        List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+        Utils.SavedInventory inventory = inventories.stream().filter(inv -> inv.getId().equals(id + ""))
+                .max(Comparator.comparing(Utils.SavedInventory::getCreation)).orElse(null);
+        if (inventory == null)
+            return false;
+        inventories.remove(inventory);
+        getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+        return true;
+    }
+
+    public int deleteAllInventories(String id) {
+        List<Utils.SavedInventory> inventories = getConfig(getManager().getId()).load().getInventories();
+        Stream<Utils.SavedInventory> s = inventories.stream().filter(inv -> inv.getId().equals(id + ""));
+        int size = (int) s.count();
+        s.forEach(inventories::remove);
+        if (size > 0)
+            getConfig(getManager().getId()).load().setInventories(inventories, true).save();
+        return size;
+    }
+
+    public List<Utils.SavedInventory> getInventories() {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            return getConfig(getManager().getId()).load().getInventories();
+        }
+        return new ArrayList<>();
+    }
+
+    public void clearInventories() {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setInventories(new ArrayList<>(), true).save();
+        }
     }
 }

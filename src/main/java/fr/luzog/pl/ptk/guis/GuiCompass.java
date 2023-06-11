@@ -104,7 +104,7 @@ public class GuiCompass {
                             from, GManager.getCurrentGame().getLobby().getSpawn(), true, true, GZone.LOBBY_RADIUS));
                     add(getCompassItem(new ItemStack(Material.REDSTONE_BLOCK), "§4Spawn", "spawn",
                             from, GManager.getCurrentGame().getSpawn().getSpawn(), true, true, GZone.SPAWN_RADIUS));
-                    addAll(GManager.getCurrentGame().getTeams().stream().map(t ->
+                    addAll(GManager.getCurrentGame().getParticipantsTeams().stream().map(t ->
                             getCompassItem(GManager.getBanner(t.getColor()), t.getColor() + t.getName(),
                                     "team " + t.getId(), from, t.getSpawn(), true,
                                     false, GTeam.TEAM_RADIUS)).collect(Collectors.toList()));
@@ -143,7 +143,7 @@ public class GuiCompass {
                         "§7/" + Main.CMD + " compass §f<x> <y> <z>"
                 )
                 .setLeftRightCommandOnClick(
-                        "input 3 " + Main.CMD + " compass custom %s %s %s%n" + Main.CMD + " compass",
+                        "input " + Main.CMD + " compass custom %l{x,y,z}%n" + Main.CMD + " compass",
                         Main.CMD + " compass"
                 )
                 .setCantClickOn(true)

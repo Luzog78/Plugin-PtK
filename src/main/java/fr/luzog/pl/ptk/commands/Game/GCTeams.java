@@ -19,16 +19,18 @@ import java.util.stream.Collectors;
 public class GCTeams {
     public static final String syntaxe = "/" + Main.CMD + " teams [help | list | create <id> [<options>] | (eliminate | reintroduce | delete) <id> | page <page> | <id> ...]",
             syntaxe_create = "/" + Main.CMD + " teams create <id> [<options>]",
-            syntaxe_team = "/" + Main.CMD + " teams <id> [help | info | list | colorGui]"
-                    + "\n§r/" + Main.CMD + " teams <id> [playersGui [<page>] | (add | remove) <player>]"
-                    + "\n§r/" + Main.CMD + " teams <id> [altar | wall [<height>] <material> | options [<args...>]]",
+            syntaxe_team = "/" + Main.CMD + " teams <id> [help | info | list]"
+                    + "\n§r/" + Main.CMD + " teams <id> [colorGui | playersGui [<page>] | (add | remove) <player>]"
+                    + "\n§r/" + Main.CMD + " teams <id> [altar | wall [<height>] <material> | options [<args...>]]"
+                    + "\n§r/" + Main.CMD + " teams <id> [tphere | tpto (<player> | <x> <y> <z> [<yaw> <pitch>] [<world>])]",
             syntaxe_team_options = "/" + Main.CMD + " teams <id>  options [help | list | <options>]",
             syntaxe_opts = "Options:"
                     + "\n§r  > --d <displayName>"
                     + "\n§r  > --p <prefix>"
                     + "\n§r  > --c <color>"
                     + "\n§r  > --r <radius>"
-                    + "\n§r  > --s <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Spawn§r";
+                    + "\n§r  > --s <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Spawn§r"
+                    /*+ "\n  > --g <x> <y> <z> [<yw> <pi>] [<world>]  §7||>> Guardian§r"*/;
 
     public static boolean onCommand(CommandSender sender, Command command, String msg, String[] args) {
         CmdUtils u = new CmdUtils(sender, command, msg, args, syntaxe);
@@ -81,7 +83,7 @@ public class GCTeams {
             else if (GManager.getCurrentGame().getTeam(args[2]).isEliminated())
                 u.err("Cette équipe est déjà éliminée.");
             else {
-                GManager.getCurrentGame().getTeam(args[2]).eliminate(GTeam.GODS_ID, true,
+                GManager.getCurrentGame().getTeam(args[2]).eliminate(true,
                         GManager.getCurrentGame().getState() == GManager.State.RUNNING
                                 || GManager.getCurrentGame().getState() == GManager.State.PAUSED, true);
             }
@@ -227,6 +229,81 @@ public class GCTeams {
                     u.synt();
                 else
                     handleOptions(u, t, args, 3);
+            } else if (args[2].equalsIgnoreCase("tphere")) {
+                if (sender instanceof Player) {
+                    for (GPlayer gp : t.getPlayers())
+                        if (gp.getPlayer() != null)
+                            Bukkit.dispatchCommand(sender, "tp " + gp.getPlayer().getName() + " " + sender.getName());
+                    u.succ("Tous les joueurs de l'équipe §f" + t.getColor() + t.getName() + "§r ont été téléportés.");
+                } else
+                    u.err("Vous devez être un joueur pour utiliser cette commande.");
+            } else if (args[2].equalsIgnoreCase("tpto")) {
+                if (args.length == 3) {
+                    u.err(CmdUtils.err_missing_arg.replace("%ARG%", "<player> ou <x> <y> <z> [<yaw>] [<pitch>] [<world>]"));
+                } else if (args.length == 4) {
+                    Player p = Bukkit.getPlayer(args[3]);
+                    if (p != null) {
+                        for (GPlayer gp : t.getPlayers())
+                            if (gp.getPlayer() != null)
+                                Bukkit.dispatchCommand(sender, "tp " + gp.getPlayer().getName() + " " + p.getName());
+                        u.succ("Tous les joueurs de l'équipe §f" + t.getColor() + t.getName() + "§r ont été téléportés.");
+                    } else
+                        u.err("Le joueur §6" + args[3] + "§r est introuvable.");
+                }else if (args.length < 6) {
+                        u.err(CmdUtils.err_missing_arg.replace("%ARG%", "<x> <y> <z> [<yaw>] [<pitch>] [<world>]"));
+                } else {
+                    try {
+                        double x = Double.parseDouble(args[3]);
+                        try {
+                            double y = Double.parseDouble(args[4]);
+                            try {
+                                double z = Double.parseDouble(args[5]);
+                                Float yaw = null, pitch = null;
+                                World w = sender instanceof Player ? u.getPlayer().getWorld() : Main.world;
+
+                                if (args.length == 7) {
+                                    w = Bukkit.getWorld(args[6]);
+                                    if (w == null) {
+                                        u.err("Le monde '" + args[6] + "' est introuvable.");
+                                        return false;
+                                    }
+                                } else if (args.length >= 8) {
+                                    try {
+                                        yaw = Float.parseFloat(args[6]);
+                                        try {
+                                            pitch = Float.parseFloat(args[7]);
+                                            if (args.length == 9) {
+                                                w = Bukkit.getWorld(args[8]);
+                                                if (w == null) {
+                                                    u.err("Le monde '" + args[8] + "' est introuvable.");
+                                                    return false;
+                                                }
+                                            }
+                                        } catch (NumberFormatException ignored) {
+                                            u.err(CmdUtils.err_number_format + " (" + args[7] + ")");
+                                            return false;
+                                        }
+                                    } catch (NumberFormatException ignored) {
+                                        u.err(CmdUtils.err_number_format + " (" + args[6] + ")");
+                                        return false;
+                                    }
+                                }
+
+                                for (GPlayer gp : t.getPlayers())
+                                    if (gp.getPlayer() != null)
+                                        Bukkit.dispatchCommand(sender, "tp " + gp.getPlayer().getName() + " "
+                                                + x + " " + y + " " + z + (yaw == null ? "" : " " + yaw + " " + pitch) + " " + w.getName());
+                                u.succ("Tous les joueurs de l'équipe §f" + t.getColor() + t.getName() + "§r ont été téléportés.");
+                            } catch (NumberFormatException e) {
+                                u.err(CmdUtils.err_number_format + " (" + args[5] + ")");
+                            }
+                        } catch (NumberFormatException e) {
+                            u.err(CmdUtils.err_number_format + " (" + args[4] + ")");
+                        }
+                    } catch (NumberFormatException e) {
+                        u.err(CmdUtils.err_number_format + " (" + args[3] + ")");
+                    }
+                }
             } else
                 u.synt();
 
@@ -304,7 +381,7 @@ public class GCTeams {
                 else {
                     Double x = null, y = null, z = null;
                     Float yw = null, pi = null;
-                    World w = Main.world;
+                    World w = u.getPlayer() == null ? Main.world : u.getPlayer().getWorld();
                     boolean orientation = handleString(arg, 2).split(" ").length >= 5;
 
                     try {
@@ -440,6 +517,8 @@ public class GCTeams {
                         add("add");
                         add("remove");
                         add("options");
+                        add("tphere");
+                        add("tpto");
                         add("altar");
                         add("wall");
                         add("playersGui");
@@ -459,6 +538,37 @@ public class GCTeams {
                             add("list");
                         }
                         addAll(completeOptions(sender, args));
+                    } else if (args[2].equalsIgnoreCase("tpto")) {
+                        if (args.length == 4) {
+                            if(sender instanceof Player)
+                                add(((Player) sender).getLocation().getX() + "");
+                            else
+                                add("0.0");
+                            addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()));
+                        } else if (args.length == 5) {
+                            if(sender instanceof Player)
+                                add(((Player) sender).getLocation().getY() + "");
+                            else
+                                add("0.0");
+                        } else if (args.length == 6) {
+                            if(sender instanceof Player)
+                                add(((Player) sender).getLocation().getZ() + "");
+                            else
+                                add("0.0");
+                        } else if (args.length == 7) {
+                            if(sender instanceof Player)
+                                add(((Player) sender).getLocation().getYaw() + "");
+                            else
+                                add("0.0");
+                            addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                        } else if (args.length == 8) {
+                            if(sender instanceof Player)
+                                add(((Player) sender).getLocation().getPitch() + "");
+                            else
+                                add("0.0");
+                        } else if (args.length == 9) {
+                            addAll(Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList()));
+                        }
                     }
                 }
             }
