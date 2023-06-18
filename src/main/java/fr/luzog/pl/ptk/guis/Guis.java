@@ -152,7 +152,7 @@ public class Guis {
             inv.setItem(size - 5, second);
         inv.setItem(4, main == null ? Items.l_gray() : main);
         inv.setItem(8, close());
-        if (back != null)
+        if (back != null && !back.isEmpty() && !back.equals("null"))
             inv.setItem(0, back(back));
         return inv;
     }

@@ -16,7 +16,8 @@ import java.util.*;
 
 public class GRole {
     public static enum Roles {
-        DEFAULT("default", new GRole("none", "none"), GRole.Info.class),
+        DEFAULT("no-role", new GRole("§cAucun Role", "Vous n'avez tous aucun rôle durant la première phase de jeu. "
+                + "Ne vous inquiètez pas, ça arrive !"), GRole.Info.class),
         KING("king", new GRKing(), GRKing.Info.class),
         KNIGHT("knight", new GRKnight(), GRKnight.Info.class),
         ;
@@ -54,26 +55,26 @@ public class GRole {
     }
 
     public static class Info {
-        private Roles role;
+        private Roles _roleType;
 
         public Info() {
-            this.role = Roles.DEFAULT;
+            this._roleType = Roles.DEFAULT;
         }
 
-        public Info(Roles role) {
-            this.role = role;
+        public Info(Roles roleType) {
+            this._roleType = roleType;
         }
 
         public void tick(Player p) {
-            role.getRole().tick(this, p);
+            _roleType.getRole().tick(this, p);
         }
 
-        public Roles getRole() {
-            return role;
+        public Roles getRoleType() {
+            return _roleType;
         }
 
-        public void setRole(Roles role) {
-            this.role = role;
+        public void setRoleType(Roles roleType) {
+            this._roleType = roleType;
         }
 
         public static Info anyRoleInfoFromMap(Map<String, Object> map) {
@@ -94,12 +95,14 @@ public class GRole {
 
         public LinkedHashMap<String, Object> toMap() {
             LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-            map.put("class", role.getId());
+            map.put("class", _roleType.getId());
             return map;
         }
     }
 
-    private String name, description;
+    private String name;
+    private ItemStack base;
+    private String description;
     private float healthModifier;
     /**
      * Armor limit is the pieces of armor that the player <b><i><u>CANNOT</u></i></b> wear.<br>
@@ -126,9 +129,11 @@ public class GRole {
     private Map<Enchantment, Integer> enchantLimit;
     private Map<PotionEffectType, Integer> potionLimit;
     private Map<Integer, BukkitRunnable> daysRunnables;
+    private ItemStack ability1, ability2, ability3, ability4;
 
     public GRole(String name, String description) {
         this.name = name;
+        this.base = new ItemStack(Material.BARRIER);
         this.description = description;
         this.healthModifier = 20;
         this.armorLimit = 0b0100_0000_0000_0000;
@@ -145,13 +150,19 @@ public class GRole {
         this.potionLimit = new HashMap<>();
         setPotionLimit(PotionEffectType.INCREASE_DAMAGE, -1);
         this.daysRunnables = new HashMap<>();
+        this.ability1 = null;
+        this.ability2 = null;
+        this.ability3 = null;
+        this.ability4 = null;
     }
 
-    public GRole(String name, String description, float healthModifier, int armorLimit,
+    public GRole(String name, ItemStack base, String description, float healthModifier, int armorLimit,
                  List<Utils.PermaEffect> permaEffects, List<Material> materialLimit,
                  Map<Enchantment, Integer> enchantLimit, Map<PotionEffectType, Integer> potionLimit,
-                 Map<Integer, BukkitRunnable> daysRunnables) {
+                 Map<Integer, BukkitRunnable> daysRunnables, ItemStack ability1, ItemStack ability2,
+                 ItemStack ability3, ItemStack ability4) {
         this.name = name;
+        this.base = base;
         this.description = description;
         this.healthModifier = healthModifier;
         this.armorLimit = armorLimit;
@@ -160,6 +171,10 @@ public class GRole {
         this.enchantLimit = enchantLimit;
         this.potionLimit = potionLimit;
         this.daysRunnables = daysRunnables;
+        this.ability1 = ability1;
+        this.ability2 = ability2;
+        this.ability3 = ability3;
+        this.ability4 = ability4;
     }
 
     /**
@@ -358,6 +373,14 @@ public class GRole {
         this.name = name;
     }
 
+    public ItemStack getBase() {
+        return base;
+    }
+
+    public void setBase(ItemStack base) {
+        this.base = base;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -473,5 +496,37 @@ public class GRole {
 
     public void removeDaysRunnable(int day) {
         this.daysRunnables.remove(day);
+    }
+
+    public ItemStack getAbility1() {
+        return ability1;
+    }
+
+    public void setAbility1(ItemStack ability1) {
+        this.ability1 = ability1;
+    }
+
+    public ItemStack getAbility2() {
+        return ability2;
+    }
+
+    public void setAbility2(ItemStack ability2) {
+        this.ability2 = ability2;
+    }
+
+    public ItemStack getAbility3() {
+        return ability3;
+    }
+
+    public void setAbility3(ItemStack ability3) {
+        this.ability3 = ability3;
+    }
+
+    public ItemStack getAbility4() {
+        return ability4;
+    }
+
+    public void setAbility4(ItemStack ability4) {
+        this.ability4 = ability4;
     }
 }

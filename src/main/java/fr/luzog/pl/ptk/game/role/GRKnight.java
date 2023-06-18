@@ -1,5 +1,6 @@
 package fr.luzog.pl.ptk.game.role;
 
+import fr.luzog.pl.ptk.utils.Heads;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.potion.PotionEffectType;
 
@@ -18,6 +19,7 @@ public class GRKnight extends GRole {
 
     public GRKnight() {
         super("Knight", "The knight is the king's bodyguard. He has to protect his king and kill the other kings.");
+        super.setBase(Heads.MISC_CROWN_ICON_BLACK.getSkull());
         super.setHealthModifier(24);
         super.addPermaEffects(new Utils.PermaEffect(PotionEffectType.SPEED, 0, false));
     }

@@ -121,7 +121,7 @@ public class GListener {
                                 roles.remove(GRole.Roles.KING);
                                 Collections.shuffle(roles);
                                 for (GPlayer p : team.getPlayers()) {
-                                    if (p.getRoleInfo() == null || p.getRoleInfo().getRole() == GRole.Roles.DEFAULT) {
+                                    if (p.getRoleInfo() == null || p.getRoleInfo().getRoleType() == GRole.Roles.DEFAULT) {
                                         try {
                                             GRole.Roles role = roles.get(0);
                                             p.setRoleInfo((GRole.Info) role.getInfoClass().newInstance(), true);
@@ -142,8 +142,8 @@ public class GListener {
                                                 pl.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3, false, false), true);
                                                 pl.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 100, 255, false, false), true);
                                                 pl.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255, false, false), true);
-                                                pl.sendMessage(Main.PREFIX + "§aVous êtes §6§n" + p.getRoleInfo().getRole().getRole().getName() + "§a !");
-                                                pl.sendMessage("  §e" + p.getRoleInfo().getRole().getRole().getDescription());
+                                                pl.sendMessage(Main.PREFIX + "§aVous êtes §6§n" + p.getRoleInfo().getRoleType().getRole().getName() + "§a !");
+                                                pl.sendMessage("  §e" + p.getRoleInfo().getRoleType().getRole().getDescription());
                                                 pl.sendMessage("§aBonne chance !");
                                             }
                                         }
@@ -567,8 +567,10 @@ public class GListener {
         }
 
         public void setScoreLines() {
-            // >>  /20 for 1 sec = 20 ticks, /x for 1 page = x sec, %y for y pages
-            int page = (int) (gPlayer.getManager().getTime() / (20 * 3.5)) % 3;
+            int len = Math.min(Main.SEASON.length(), 20);
+            // >>  +w for w ticks of offset, /x for 1 page = x ticks, %y for y pages
+//            int page = (int) (gPlayer.getManager().getTime() / (20 * 3.5)) % 3;
+            int page = (int) (Math.abs(gPlayer.getManager().getTime() - 5) / (5 * len)) % 3;
             // §c----------
             if (page == 2) {
                 l.clear();
@@ -594,7 +596,7 @@ public class GListener {
                 l.put("§8Heure : §3" + gPlayer.getManager().getFormattedTime(), 8);
                 l.put("§r§r", 7);
                 l.put("§6Équipe : " + (gPlayer.getTeam() == null ? "§cAucune" : "§f" + gPlayer.getTeam().getName()), 6);
-                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRole().getRole().getName(), 5);
+                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRoleType().getRole().getName(), 5);
                 l.put("§r§r§r", 4);
                 l.put("§d" + SpecialChars.SWORDS + "§5 Kills : §d" + gPlayer.getStats().getKills(), 3);
                 l.put("§d" + SpecialChars.DANGER_DEATH + "§5 Deaths : §d" + gPlayer.getStats().getDeaths(), 2);
@@ -604,7 +606,7 @@ public class GListener {
                 int n = gPlayer.getManager().getParticipantsTeams().size();
                 l.clear();
                 l.put("§r", n + 6);
-                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRole().getRole().getName(), n + 5);
+                l.put("§6Rôle : §e" + gPlayer.getRoleInfo().getRoleType().getRole().getName(), n + 5);
                 l.put("§r§r", n + 4);
                 l.put("§6Équipes §7(§f" + gPlayer.getManager().getParticipantsTeams().stream()
                         .filter(t -> !t.isEliminated()).count() + "§7) : ", n + 3);

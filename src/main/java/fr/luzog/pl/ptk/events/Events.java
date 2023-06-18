@@ -684,7 +684,7 @@ public class Events implements Listener {
             }
 
             if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
-                gPlayer.getRoleInfo().getRole().getRole().checkForHand(e.getPlayer());
+                gPlayer.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
             }
 
             gPlayer.getStats().increasePickedItems();
@@ -734,7 +734,7 @@ public class Events implements Listener {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
 
-                gp.getRoleInfo().getRole().getRole().checkForHand(e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
 
             }
         }
@@ -775,10 +775,10 @@ public class Events implements Listener {
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
 
                 if (e.hasItem()) {
-                    if (!gp.getRoleInfo().getRole().getRole().checkForItem(e.getItem())) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(e.getItem())) {
                         e.setCancelled(true);
                     }
-                    gp.getRoleInfo().getRole().getRole().checkForHand(e.getPlayer());
+                    gp.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
                 }
 
             }
@@ -935,7 +935,7 @@ public class Events implements Listener {
 
         if (e.getEnchanter().getGameMode() != GameMode.CREATIVE && !Objects.equals(p.getTeamId(), GTeam.GODS_ID)) {
             for (Map.Entry<Enchantment, Integer> toAdd : e.getEnchantsToAdd().entrySet()) {
-                for (Map.Entry<Enchantment, Integer> limit : p.getRoleInfo().getRole().getRole().getEnchantLimit().entrySet()) {
+                for (Map.Entry<Enchantment, Integer> limit : p.getRoleInfo().getRoleType().getRole().getEnchantLimit().entrySet()) {
                     if (toAdd.getKey().equals(limit.getKey()) && toAdd.getValue() > limit.getValue()) {
                         e.setCancelled(true);
                         return;
@@ -990,7 +990,7 @@ public class Events implements Listener {
         if (!e.isCancelled() && e.getWhoClicked().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)
-                    && !gp.getRoleInfo().getRole().getRole().checkForItem(e.getRecipe().getResult())) {
+                    && !gp.getRoleInfo().getRoleType().getRole().checkForItem(e.getRecipe().getResult())) {
                 e.setResult(org.bukkit.event.Event.Result.DENY);
             }
         }
@@ -1011,8 +1011,8 @@ public class Events implements Listener {
         if (e.getPlayer().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
-                gp.getRoleInfo().getRole().getRole().checkForArmor((Player) e.getPlayer());
-                gp.getRoleInfo().getRole().getRole().checkForHand((Player) e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForArmor((Player) e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForHand((Player) e.getPlayer());
             }
         }
         Crafting.onClose(e);
@@ -1028,14 +1028,14 @@ public class Events implements Listener {
                 if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER
                         && Arrays.asList(36, 37, 38, 39, e.getWhoClicked().getInventory().getHeldItemSlot()).contains(e.getSlot())) {
                     ItemStack is = e.getCursor();
-                    if (!gp.getRoleInfo().getRole().getRole().checkForItem(is)) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(is)) {
                         e.setCancelled(true);
                     }
                 }
 
                 if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.ANVIL && e.getSlot() == 2) {
                     ItemStack is = e.getCurrentItem();
-                    if (!gp.getRoleInfo().getRole().getRole().checkForItem(is)) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(is)) {
                         e.setCancelled(true);
                     }
                 }
@@ -1043,8 +1043,8 @@ public class Events implements Listener {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        gp.getRoleInfo().getRole().getRole().checkForArmor((Player) e.getWhoClicked());
-                        gp.getRoleInfo().getRole().getRole().checkForHand((Player) e.getWhoClicked());
+                        gp.getRoleInfo().getRoleType().getRole().checkForArmor((Player) e.getWhoClicked());
+                        gp.getRoleInfo().getRoleType().getRole().checkForHand((Player) e.getWhoClicked());
                     }
                 }.runTaskLater(Main.instance, 1);
 

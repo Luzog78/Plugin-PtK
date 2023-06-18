@@ -3,8 +3,10 @@ package fr.luzog.pl.ptk.commands.Game;
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
+import fr.luzog.pl.ptk.game.role.GRole;
 import fr.luzog.pl.ptk.guis.GuiInv;
 import fr.luzog.pl.ptk.guis.GuiPlayers;
+import fr.luzog.pl.ptk.guis.GuiRoles;
 import fr.luzog.pl.ptk.guis.GuiTeams;
 import fr.luzog.pl.ptk.utils.CmdUtils;
 import fr.luzog.pl.ptk.utils.SpecialChars;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class GCPlayers {
     public static final String syntaxe = "/" + Main.CMD + " players [help | list | <player> ... | page <page>]",
-            syntaxe_players = "/" + Main.CMD + " players <player> [info | init | team | teams [<page>] | inv ...]",
+            syntaxe_players = "/" + Main.CMD + " players <player> [info | init | team | teams [<page>] | role | roles [<page>] | inv ...]",
             syntaxe_players_inv = "/" + Main.CMD + " players <player> inv [list | <id>[:<idx>] [del | save <clear?> | load (<delete?> <players...> | gui [<delete?> (<players,...(ns)>|.) [<page>]])]]";
 
     public static boolean onCommand(CommandSender sender, Command command, String msg, String[] args) {
@@ -58,16 +60,16 @@ public class GCPlayers {
                 }
         } else {
             u.setSyntaxe(syntaxe_players);
-            GPlayer gPlayer = GManager.getCurrentGame().getPlayer(args[1], false);
-            Player p = gPlayer == null || gPlayer.getPlayer() == null ? Bukkit.getPlayerExact(args[1]) : gPlayer.getPlayer();
+            GPlayer gp = GManager.getCurrentGame().getPlayer(args[1], false);
+            Player p = gp == null || gp.getPlayer() == null ? Bukkit.getPlayerExact(args[1]) : gp.getPlayer();
             if (args.length >= 3)
                 if (args[2].equalsIgnoreCase("info")) {
                     DecimalFormat df = new DecimalFormat("0.00");
                     u.succ("Joueur :");
-                    u.succ(" - Nom : §f" + (p == null ? gPlayer == null ? "§cnull" : gPlayer.getName() : p.getName()));
-                    u.succ(" - UUID : §7" + (p == null ? gPlayer == null ? "§cnull" : gPlayer.getLastUuid() : p.getUniqueId()));
-                    u.succ(" - Team : §f" + (gPlayer == null ? "§cHors Jeu" : gPlayer.getTeam() == null ? "§4§lAucune" : gPlayer.getTeam().getName()));
-                    u.succ(" - Nom d'Affichage : §f" + (gPlayer == null ? p == null ? "§cnull" : p.getDisplayName() : gPlayer.getDisplayName()));
+                    u.succ(" - Nom : §f" + (p == null ? gp == null ? "§cnull" : gp.getName() : p.getName()));
+                    u.succ(" - UUID : §7" + (p == null ? gp == null ? "§cnull" : gp.getLastUuid() : p.getUniqueId()));
+                    u.succ(" - Team : §f" + (gp == null ? "§cHors Jeu" : gp.getTeam() == null ? "§4§lAucune" : gp.getTeam().getName()));
+                    u.succ(" - Nom d'Affichage : §f" + (gp == null ? p == null ? "§cnull" : p.getDisplayName() : gp.getDisplayName()));
                     u.succ(" - Vie : §c" + (p == null ? "0.0§7 /0.0" : df.format(p.getHealth()) + "§7 /" + p.getMaxHealth()));
                     u.succ(" - Nourriture : §a" + (p == null ? "0.0§7 /0.0" : df.format(p.getFoodLevel()) + "§7 /20.0"));
                     u.succ(" - Saturation : §e" + (p == null ? "0.0§7 /0.0" : df.format(p.getSaturation()) + "§7 /20.0"));
@@ -76,19 +78,19 @@ public class GCPlayers {
                             : p.getWorld().getName().equalsIgnoreCase("world_nether") ? "§dNether"
                             : p.getWorld().getName().equalsIgnoreCase("world_the_end") ? "§5End"
                             : p.getWorld().getName())));
-                    u.succ(" - Zone : §f" + (gPlayer == null ? "§cHors Jeu" : gPlayer.getZone() == null ? "§cAucune" : gPlayer.getZone().getId() + "§7 (" + gPlayer.getZone().getType() + ")"));
+                    u.succ(" - Zone : §f" + (gp == null ? "§cHors Jeu" : gp.getZone() == null ? "§cAucune" : gp.getZone().getId() + "§7 (" + gp.getZone().getType() + ")"));
                 } else if (args[2].equalsIgnoreCase("init")) {
-                    if (gPlayer == null) {
-                        gPlayer = GManager.getCurrentGame().getPlayer(args[1], true);
-                        u.succ("Joueur créé : §f" + gPlayer.getDisplayName());
+                    if (gp == null) {
+                        gp = GManager.getCurrentGame().getPlayer(args[1], true);
+                        u.succ("Joueur créé : §f" + gp.getDisplayName());
                     } else {
-                        u.err("Joueur déjà créé : §f" + gPlayer.getDisplayName());
+                        u.err("Joueur déjà créé : §f" + gp.getDisplayName());
                     }
                 } else if (args[2].equalsIgnoreCase("team")) {
-                    if (gPlayer == null || gPlayer.getTeam() == null)
+                    if (gp == null || gp.getTeam() == null)
                         u.err("Le joueur n'a pas de team");
                     else if (sender instanceof Player)
-                        u.getPlayer().openInventory(GuiTeams.getTeamInventory(u.getPlayer(), gPlayer.getTeam(),
+                        u.getPlayer().openInventory(GuiTeams.getTeamInventory(u.getPlayer(), gp.getTeam(),
                                 Main.CMD + " players " + u.getPlayer().getName()));
                     else
                         u.err(CmdUtils.err_not_player);
@@ -105,9 +107,48 @@ public class GCPlayers {
                         }
                     else
                         u.err(CmdUtils.err_not_player);
+                } else if (args[2].equalsIgnoreCase("role")) {
+                    if (gp == null || gp.getRoleInfo() == null)
+                        u.err("Le joueur n'existe pas ou n'a pas de role");
+                    else if (args.length == 3) {
+                        u.getPlayer().openInventory(GuiRoles.getRoleInventory(gp.getRoleInfo().getRoleType(), gp.getRoleInfo(),
+                                Main.CMD + " players " + gp.getName() + " role", Main.CMD + " players " + gp.getName()));
+                    } else if (args[3].equalsIgnoreCase("get")) {
+                        u.succ("Rôle de §6" + gp.getDisplayName() + "§7 : §e" + gp.getRoleInfo().getRoleType().getRole().getName());
+                    } else if (args[3].equalsIgnoreCase("set")) {
+                        if (args.length == 4)
+                            u.err("Veuillez préciser un rôle");
+                        else {
+                            GRole.Roles r = GRole.Roles.fromId(args[4]);
+                            if (r == null)
+                                u.err("Rôle inconnu : §f" + args[4]);
+                            else {
+                                try {
+                                    gp.setRoleInfo((GRole.Info) r.getInfoClass().newInstance(), true);
+                                    u.succ("Rôle de §6" + gp.getDisplayName() + "§7 : §e" + gp.getRoleInfo().getRoleType().getRole().getName());
+                                } catch (InstantiationException | IllegalAccessException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                    } else
+                        u.err("Argument inconnu : §f" + args[3]);
+                } else if (args[2].equalsIgnoreCase("roles")) {
+                    if (args.length == 3)
+                        Bukkit.dispatchCommand(sender, Main.CMD + " players " + args[1] + " roles 0");
+                    else if (sender instanceof Player)
+                        try {
+                            u.getPlayer().openInventory(GuiPlayers.getPlayerChangeRoleInventory(args[1],
+                                    Main.CMD + " players " + args[1], Main.CMD + " players " + args[1] + " roles",
+                                    Integer.parseInt(args[3])));
+                        } catch (NumberFormatException e) {
+                            Bukkit.dispatchCommand(sender, Main.CMD + " players " + args[1] + " roles 0");
+                        }
+                    else
+                        u.err(CmdUtils.err_not_player);
                 } else if (args[2].equalsIgnoreCase("inv")) {
                     u.setSyntaxe(syntaxe_players_inv);
-                    if (gPlayer != null) {
+                    if (gp != null) {
                         if (args.length == 3) {
                             u.getPlayer().performCommand(Main.CMD + " " + String.join(" ", args) + " gui 0");
                         } else if (args[3].equalsIgnoreCase("gui")) {
@@ -131,7 +172,7 @@ public class GCPlayers {
                                             }
                                     }};
                                     u.getPlayer().openInventory(GuiInv.getMainInventory(
-                                            u.getPlayer().getName(), gPlayer.getName(),
+                                            u.getPlayer().getName(), gp.getName(),
                                             Main.CMD + " players " + args[1],
                                             Main.CMD + " players " + args[1] + " inv gui",
                                             page, options, Main.CMD + " " + String.join(" ", args)));
@@ -141,8 +182,8 @@ public class GCPlayers {
                             }
                         } else if (args[3].equalsIgnoreCase("list")) {
                             LinkedHashMap<String, ArrayList<Utils.Pair<Integer, Utils.SavedInventory>>> inventories = new LinkedHashMap<>();
-                            for (int i = 0; i < gPlayer.getInventories().size(); i++) {
-                                Utils.Pair<Integer, Utils.SavedInventory> inv = new Utils.Pair<>(i, gPlayer.getInventories().get(i));
+                            for (int i = 0; i < gp.getInventories().size(); i++) {
+                                Utils.Pair<Integer, Utils.SavedInventory> inv = new Utils.Pair<>(i, gp.getInventories().get(i));
                                 if (inventories.containsKey(inv.getValue().getId())) {
                                     inventories.get(inv.getValue().getId()).add(inv);
                                 } else {
@@ -151,7 +192,7 @@ public class GCPlayers {
                                     inventories.put(inv.getValue().getId(), list);
                                 }
                             }
-                            u.succ("Inventaires de §6" + gPlayer.getDisplayName() + "§r§7 (§f" + inventories.size() + "§r) :");
+                            u.succ("Inventaires de §6" + gp.getDisplayName() + "§r§7 (§f" + inventories.size() + "§r) :");
                             for (String id : inventories.keySet()) {
                                 u.succ(" §8- §b" + id + "§7 :");
                                 for (Utils.Pair<Integer, Utils.SavedInventory> inv : inventories.get(id))
@@ -177,35 +218,35 @@ public class GCPlayers {
 
                             if (args.length == 4) {
                                 Utils.SavedInventory inv = idx == null ?
-                                        gPlayer.getLastInventory(id, false)
-                                        : gPlayer.getInventory(id, idx, false);
+                                        gp.getLastInventory(id, false)
+                                        : gp.getInventory(id, idx, false);
                                 if (inv == null) {
                                     u.err("Inventaire introuvable. §7(§b" + id + (idx == null ? "" : "§7:§f" + idx) + "§7)");
                                 } else {
                                     boolean isLast = idx == null;
-                                    int last = (int) gPlayer.getInventories().stream()
+                                    int last = (int) gp.getInventories().stream()
                                             .filter(i -> i.getId().equals(id)).count() - 1;
                                     if (idx == null)
                                         idx = last;
                                     else
                                         isLast = idx == last;
                                     u.getPlayer().openInventory(GuiInv.getInvInventory(
-                                            GuiPlayers.getHead(gPlayer.getName(), null, "null"),
-                                            gPlayer.getName(), inv,
+                                            GuiPlayers.getHead(gp.getName(), null, "null"),
+                                            gp.getName(), inv,
                                             isLast, idx,
-                                            Main.CMD + " players " + gPlayer.getName() + " inv"));
+                                            Main.CMD + " players " + gp.getName() + " inv"));
                                 }
                             } else if (args[4].equalsIgnoreCase("del")) {
                                 if (idx != null) {
-                                    if (gPlayer.deleteInventory(id, idx))
+                                    if (gp.deleteInventory(id, idx))
                                         u.succ("Inventaire §b" + id + ":" + idx + "§r supprimé !");
                                     else
                                         u.err("Inventaire §b" + id + "§7:§f" + idx + "§r introuvable.");
                                 } else if (args.length >= 6 && args[5].equalsIgnoreCase("all")) {
-                                    int i = gPlayer.deleteAllInventories(id);
+                                    int i = gp.deleteAllInventories(id);
                                     u.succ("§6" + i + "§r Inventaire" + (i > 1 ? "s" : "") + " §b" + id + "§r supprimés !");
                                 } else {
-                                    if (gPlayer.deleteLastInventory(id))
+                                    if (gp.deleteLastInventory(id))
                                         u.succ("Dernier inventaire §b" + id + "§r supprimé !");
                                     else
                                         u.err("Dernier inventaire §b" + id + "§r introuvable.");
@@ -224,9 +265,9 @@ public class GCPlayers {
                                         try {
                                             int page = Integer.parseInt(args[7]);
                                             boolean clear = args[6].equalsIgnoreCase("true");
-                                            u.getPlayer().openInventory(GuiInv.getSaveInventory(id, gPlayer.getName(), clear,
-                                                    Main.CMD + " players " + gPlayer.getName() + " inv",
-                                                    Main.CMD + " players " + gPlayer.getName() + " inv " + id + " save gui", page));
+                                            u.getPlayer().openInventory(GuiInv.getSaveInventory(id, gp.getName(), clear,
+                                                    Main.CMD + " players " + gp.getName() + " inv",
+                                                    Main.CMD + " players " + gp.getName() + " inv " + id + " save gui", page));
                                         } catch (NumberFormatException e) {
                                             u.err("Indiquez un nombre de page valide. (" + args[7] + ")");
                                         }
@@ -240,7 +281,7 @@ public class GCPlayers {
                                     } else {
                                         String name = args.length >= 8 ?
                                                 String.join(" ", Arrays.copyOfRange(args, 7, args.length)) : null;
-                                        gPlayer.saveInventory(id, name, u.getPlayer().getName(), origin.getInventory());
+                                        gp.saveInventory(id, name, u.getPlayer().getName(), origin.getInventory());
                                         u.succ("Inventaire sauvegardé ! §7(§b" + id + "§7)");
                                         if (args[6].equalsIgnoreCase("true")) {
                                             origin.getInventory().clear();
@@ -270,8 +311,8 @@ public class GCPlayers {
                                                         remove(player);
                                     }};
                                     Utils.SavedInventory inv = idx == null ?
-                                            gPlayer.getLastInventory(id, delete)
-                                            : gPlayer.getInventory(id, idx, delete);
+                                            gp.getLastInventory(id, delete)
+                                            : gp.getInventory(id, idx, delete);
                                     if (inv == null) {
                                         u.err("Inventaire introuvable. §7(§b" + id + (idx == null ? "" : "§7:§f" + idx) + "§7)");
                                     } else {
@@ -289,8 +330,8 @@ public class GCPlayers {
                                         Player player = Bukkit.getPlayer(args[6]);
                                         boolean delete = args[7].equalsIgnoreCase("true");
                                         Utils.SavedInventory inv = idx == null ?
-                                                gPlayer.getLastInventory(id, delete)
-                                                : gPlayer.getInventory(id, idx, delete);
+                                                gp.getLastInventory(id, delete)
+                                                : gp.getInventory(id, idx, delete);
                                         if (inv == null) {
                                             u.err("Inventaire introuvable. §7(§b" + id + (idx == null ? "" : "§7:§f" + idx) + "§7)");
                                         } else if (player == null) {
@@ -340,10 +381,10 @@ public class GCPlayers {
                                                         } else
                                                             add(name);
                                                 }};
-                                                u.getPlayer().openInventory(GuiInv.getLoadInventory(gPlayer.getName(),
+                                                u.getPlayer().openInventory(GuiInv.getLoadInventory(gp.getName(),
                                                         id + ":" + idx, delete, players,
-                                                        Main.CMD + " players " + gPlayer.getName() + " inv " + id + ":" + idx,
-                                                        Main.CMD + " players " + gPlayer.getName() + " inv "
+                                                        Main.CMD + " players " + gp.getName() + " inv " + id + ":" + idx,
+                                                        Main.CMD + " players " + gp.getName() + " inv "
                                                                 + id + ":" + idx + " load gui", page));
                                             } catch (NumberFormatException e) {
                                                 u.err("Indiquez un nombre de page valide. (" + args[7] + ")");
@@ -386,6 +427,9 @@ public class GCPlayers {
             add("info");
             add("init");
             add("team");
+            add("teams");
+            add("role");
+            add("roles");
             add("inv");
         }} : args[2].equalsIgnoreCase("inv") ? new ArrayList<String>() {{
             GPlayer gPlayer = GManager.getCurrentGame().getPlayer(args[1], false);

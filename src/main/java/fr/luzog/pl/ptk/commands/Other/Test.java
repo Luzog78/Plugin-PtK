@@ -1,6 +1,7 @@
 package fr.luzog.pl.ptk.commands.Other;
 
-import fr.luzog.pl.ptk.game.ZRole;
+import fr.luzog.pl.ptk.game.role.GRole;
+import fr.luzog.pl.ptk.guis.GuiRoles;
 import fr.luzog.pl.ptk.utils.CmdUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,13 +13,10 @@ import java.util.List;
 
 public class Test implements CommandExecutor, TabCompleter {
 
-    boolean b = false;
-
     public boolean onCommand(CommandSender sender, Command cmd, String msg, String[] args) {
         CmdUtils u = new CmdUtils(sender, cmd, msg, args, "/test");
 
-        (b ? ZRole.WITCH.getKit() : ZRole.WIZARD.getKit()).forEach(i -> u.getPlayer().getInventory().addItem(i.build()));
-        b = !b;
+        u.getPlayer().openInventory(GuiRoles.getRoleInventory(GRole.Roles.KING, null, "test", null));
 
         u.succ("Test!");
 

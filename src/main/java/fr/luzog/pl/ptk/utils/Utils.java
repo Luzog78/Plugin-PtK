@@ -7,6 +7,7 @@ import net.minecraft.server.v1_8_R3.ChatComponentText;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerListHeaderFooter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
@@ -38,6 +39,67 @@ import java.util.stream.Stream;
 public class Utils {
 
     public static final String loreSeparator = "------------------";
+
+    public static final Map<Enchantment, String> rawEnchantToCommonTermMap = new HashMap<Enchantment, String>() {{
+        put(Enchantment.ARROW_DAMAGE, "Power");
+        put(Enchantment.ARROW_FIRE, "Flame");
+        put(Enchantment.ARROW_INFINITE, "Infinity");
+        put(Enchantment.ARROW_KNOCKBACK, "Punch");
+//        put(Enchantment.BINDING_CURSE, "Curse of Binding");
+        put(Enchantment.DAMAGE_ALL, "Sharpness");
+        put(Enchantment.DAMAGE_ARTHROPODS, "Bane of Arthropods");
+        put(Enchantment.DAMAGE_UNDEAD, "Smite");
+        put(Enchantment.DEPTH_STRIDER, "Depth Strider");
+        put(Enchantment.DIG_SPEED, "Efficiency");
+        put(Enchantment.DURABILITY, "Unbreaking");
+        put(Enchantment.FIRE_ASPECT, "Fire Aspect");
+//        put(Enchantment.FROST_WALKER, "Frost Walker");
+        put(Enchantment.KNOCKBACK, "Knockback");
+        put(Enchantment.LOOT_BONUS_BLOCKS, "Fortune");
+        put(Enchantment.LOOT_BONUS_MOBS, "Looting");
+        put(Enchantment.LUCK, "Luck of the Sea");
+        put(Enchantment.LURE, "Lure");
+//        put(Enchantment.MENDING, "Mending");
+        put(Enchantment.OXYGEN, "Respiration");
+        put(Enchantment.PROTECTION_ENVIRONMENTAL, "Protection");
+        put(Enchantment.PROTECTION_EXPLOSIONS, "Blast Protection");
+        put(Enchantment.PROTECTION_FALL, "Feather Falling");
+        put(Enchantment.PROTECTION_FIRE, "Fire Protection");
+        put(Enchantment.PROTECTION_PROJECTILE, "Projectile Protection");
+        put(Enchantment.SILK_TOUCH, "Silk Touch");
+//        put(Enchantment.SWEEPING_EDGE, "Sweeping Edge");
+        put(Enchantment.THORNS, "Thorns");
+        put(Enchantment.WATER_WORKER, "Aqua Affinity");
+    }};
+
+    public static final Map<PotionEffectType, String> rawPotionToCommonTermMap = new HashMap<PotionEffectType, String>() {{
+        put(PotionEffectType.ABSORPTION, "Absorption");
+        put(PotionEffectType.BLINDNESS, "Blindness");
+        put(PotionEffectType.CONFUSION, "Nausea");
+        put(PotionEffectType.DAMAGE_RESISTANCE, "Resistance");
+        put(PotionEffectType.FAST_DIGGING, "Haste");
+        put(PotionEffectType.FIRE_RESISTANCE, "Fire Resistance");
+        put(PotionEffectType.HARM, "Instant Damage");
+        put(PotionEffectType.HEAL, "Instant Health");
+        put(PotionEffectType.HEALTH_BOOST, "Health Boost");
+        put(PotionEffectType.HUNGER, "Hunger");
+        put(PotionEffectType.INCREASE_DAMAGE, "Strength");
+        put(PotionEffectType.INVISIBILITY, "Invisibility");
+        put(PotionEffectType.JUMP, "Jump Boost");
+//        put(PotionEffectType.LEVITATION, "Levitation");
+//        put(PotionEffectType.LUCK, "Luck");
+        put(PotionEffectType.NIGHT_VISION, "Night Vision");
+        put(PotionEffectType.POISON, "Poison");
+        put(PotionEffectType.REGENERATION, "Regeneration");
+        put(PotionEffectType.SATURATION, "Saturation");
+        put(PotionEffectType.SLOW, "Slowness");
+        put(PotionEffectType.SLOW_DIGGING, "Mining Fatigue");
+        put(PotionEffectType.SPEED, "Speed");
+//        put(PotionEffectType.UNLUCK, "Bad Luck");
+        put(PotionEffectType.WATER_BREATHING, "Water Breathing");
+        put(PotionEffectType.WEAKNESS, "Weakness");
+        put(PotionEffectType.WITHER, "Wither");
+    }};
 
     /**
      * It's a class that represents a Mojang profile
@@ -809,7 +871,6 @@ public class Utils {
      * @param loc  The location you want to check if it's inside the cuboid.
      * @param loc1 The first location
      * @param loc2 The location of the second corner of the cuboid.
-     *
      * @return A boolean value.
      */
     public static boolean isInside(Location loc, Location loc1, Location loc2) {
@@ -828,7 +889,6 @@ public class Utils {
      *
      * @param loc1 The first location
      * @param loc2 The second location
-     *
      * @return A list of blocks
      */
     public static List<Block> getBlocksIn(Location loc1, Location loc2) {
@@ -849,7 +909,6 @@ public class Utils {
      *
      * @param col The column of the cell.
      * @param row The row of the cell you want to get the position of.
-     *
      * @return The position of the cell in the array.
      */
     public static int posOf(int col, int row) {
@@ -860,7 +919,6 @@ public class Utils {
      * Given a position, return the column and row of that position.
      *
      * @param position The position of the cell in the inventory.
-     *
      * @return A pair of integers.
      */
     public static Pair<Integer, Integer> colAndRowOf(int position) {
@@ -877,7 +935,6 @@ public class Utils {
      * @param pos1 The first position.
      * @param pos2 The position of the second point.
      * @param wall If true, the zone will be a filled zone, if false, it will be an empty zone.
-     *
      * @return A list of integers.
      */
     public static List<Integer> zoneOf(int pos1, int pos2, boolean wall) {
@@ -983,7 +1040,6 @@ public class Utils {
      * (Y position included)
      *
      * @param loc The location to normalize
-     *
      * @return A Location object
      */
     public static Location normalize(Location loc) {
@@ -995,7 +1051,6 @@ public class Utils {
      *
      * @param loc The location to normalize
      * @param y   If true, the y-coordinate will be normalized. If false, it will not.
-     *
      * @return A Location object
      */
     public static Location normalize(Location loc, boolean y) {
@@ -1015,7 +1070,6 @@ public class Utils {
      * @param a             The first location
      * @param b             The second location
      * @param considerWorld If true, the method will return null if the two locations are in different worlds.
-     *
      * @return The exact distance between the two locations.
      */
     public static Double safeDistance(Location a, Location b, boolean considerWorld) {
@@ -1037,7 +1091,6 @@ public class Utils {
      *                      different worlds.
      * @param precision     The number of decimal places to round to (0 to get an int).
      * @param radius        If distance <= radius, the distance will be xx.x
-     *
      * @return The formatted distance between two locations.
      */
     public static String safeDistance(Location a, Location b, boolean considerWorld, int precision, double radius) {
@@ -1052,7 +1105,6 @@ public class Utils {
      *
      * @param header The header of the tab list.
      * @param footer The footer of the tab list.
-     *
      * @return A PacketPlayOutPlayerListHeaderFooter object.
      */
     public static PacketPlayOutPlayerListHeaderFooter getTabHeaderAndFooter(List<String> header, List<String> footer) {
@@ -1113,7 +1165,6 @@ public class Utils {
      * @param decimal Whether to use decimals.
      * @param ywPi    Yaw and Pitch included
      * @param world   If true, the world name will be added to the end of the string.
-     *
      * @return A string with the location of the player.
      */
     public static String locToString(Location loc, boolean decimal, boolean ywPi, boolean world) {
@@ -1190,7 +1241,6 @@ public class Utils {
      *
      * @param printStackTrace If true, print in console errors.
      * @param r               The runnable to run.
-     *
      * @return A boolean value.
      */
     public static boolean tryTo(boolean printStackTrace, Runnable r) {
@@ -1221,7 +1271,6 @@ public class Utils {
      * It gets all the players in the game and in the server, and returns them as an ArrayList
      *
      * @param manager The {@link GManager} object that you want to get the players from.
-     *
      * @return A list of all players in the game.
      */
     public static ArrayList<String> getAllPlayers(GManager manager) {
@@ -1388,7 +1437,6 @@ public class Utils {
      *                          <li><code style="color: #aa00aa">{p.}% $ {b}</code>&nbsp; &nbsp; <code style="color: #00aaaa">25.00 $ [####------------]</code></li>
      *                          <li><code style="color: #aa00aa">{b} >> {p#}</code>&nbsp; &nbsp; <code style="color: #00aaaa">[####------------] >> 0.25</code></li>
      *                   </ul>
-     *
      * @return A string that is a progress bar.
      */
     public static String progressBar(String leftSide, String rightSide, String fill, String empty, String endFill, String startEmpty,
@@ -1442,7 +1490,6 @@ public class Utils {
      *                          <li><code style="color: #aa00aa">{p.}% $ {b}</code>&nbsp; &nbsp; <code style="color: #00aaaa">25.00 $ [####------------]</code></li>
      *                          <li><code style="color: #aa00aa">{b} >> {p#}</code>&nbsp; &nbsp; <code style="color: #00aaaa">[####------------] >> 0.25</code></li>
      *                   </ul>
-     *
      * @return A string that is a progress bar.
      */
     public static String progressBar(String leftSide, String rightSide, String[] fillChars, String empty, String endFill, String startEmpty,
@@ -1467,7 +1514,6 @@ public class Utils {
      * @param from   The date to start the comparison from.
      * @param to     The date to compare to.
      * @param millis If true, the milliseconds will be included in the output.
-     *
      * @return A string that represents the difference between two dates.
      */
     public static String compareDate(Date from, Date to, boolean millis) {
@@ -1489,7 +1535,6 @@ public class Utils {
      * It takes a string, hash it, and returns a long
      *
      * @param s The string to hash.
-     *
      * @return A hash of the string.
      */
     public static long hashStringToSeed(String s) {
@@ -1505,7 +1550,6 @@ public class Utils {
      * Calculates the total EXP needed to reach the given level.
      *
      * @param lvl The level you want to calculate the experience for.
-     *
      * @return The amount of experience needed to reach a certain level.
      */
     public static long lvlToExp(double lvl) {
@@ -1519,7 +1563,6 @@ public class Utils {
      * Calculs the amount of exp needed to level up at a certain level.
      *
      * @param lvl The level of the player.
-     *
      * @return The amount of experience needed to level up at the given level.
      */
     public static long expToLvlUpAt(int lvl) {
@@ -1532,7 +1575,6 @@ public class Utils {
      * Converts experience to level.
      *
      * @param exp The amount of experience you want to convert.
-     *
      * @return The level of a player based on the amount of experience.
      */
     public static double expToLvl(long exp) {
@@ -1545,7 +1587,6 @@ public class Utils {
      * It takes an array of ItemStacks and converts it to a Base64 String
      *
      * @param items The ItemStack array to be converted.
-     *
      * @return A Base64 {@link String} of the ItemStack array.
      */
     public static String itemStackArrayToBase64(ItemStack[] items) throws IllegalStateException {
@@ -1573,7 +1614,6 @@ public class Utils {
      * It decodes and returns a ItemStack array from a given Base64 String.
      *
      * @param data The Base64 String to decode.
-     *
      * @return The decoded ItemStack array.
      */
     public static ItemStack[] itemStackArrayFromBase64(String data) {
@@ -1654,5 +1694,42 @@ public class Utils {
         orb.setExperience(size);
         orb.setMetadata("exp", new FixedMetadataValue(Main.instance, size));
         return orb;
+    }
+
+    /**
+     * This method is used to break lines in a string.<br>
+     * It will break lines at the spaces in the string.<br>
+     * It will not break lines in the middle of a word.<br>
+     * It will not break lines if the word is longer than the max length.<br>
+     *
+     * <br>
+     * <p>
+     * Example:<br>
+     *
+     * <pre>
+     *     breakLines("Hello World!", 5);
+     *     // Hello
+     *     // World!
+     * </pre>
+     *
+     * @param str       The string to break lines in.
+     * @param maxLength The max length of a line.
+     * @return The string with lines broken.
+     */
+    public static String breakLines(String str, int maxLength) {
+        String[] words = str.split(" ");
+        StringBuilder ret = new StringBuilder(str.length());
+
+        int len = 0;
+        for (String word : words) {
+            if (len + word.length() > maxLength) {
+                ret.append("\n");
+                len = 0;
+            }
+            ret.append(word).append(" ");
+            len += word.length() + 1;
+        }
+
+        return ret.length() > 0 ? ret.substring(0, ret.length() - 1) : ret.toString();
     }
 }

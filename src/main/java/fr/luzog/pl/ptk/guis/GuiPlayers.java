@@ -4,6 +4,7 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Cheat.Freeze;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
+import fr.luzog.pl.ptk.game.role.GRole;
 import fr.luzog.pl.ptk.utils.Heads;
 import fr.luzog.pl.ptk.utils.Items;
 import fr.luzog.pl.ptk.utils.Utils;
@@ -18,6 +19,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -136,6 +138,35 @@ public class GuiPlayers {
                                 .build()).collect(Collectors.toList()));
     }
 
+    public static Inventory getPlayerChangeRoleInventory(String player, String back, String navigationBaseCommand, int page) {
+        if (GManager.getCurrentGame() == null)
+            return Guis.getErrorInventory("§cAucune partie en cours", back);
+        GPlayer gPlayer = GManager.getCurrentGame().getPlayer(player, false);
+        return Guis.getPagedInventory("§aJoueurs §f-§e " + player + "§f » §6Rôles", 54, back,
+                getHead(player, "Clic pour rafraîchir", navigationBaseCommand + " " + page),
+                GuiRoles.getRoleItem(gPlayer == null ? null : gPlayer.getRoleInfo().getRoleType(),
+                        gPlayer == null ? null : "Clic pour voir plus",
+                        gPlayer == null ? "null" : Main.CMD + " players " + gPlayer.getName() + " role"),
+                navigationBaseCommand, page, Arrays.stream(GRole.Roles.values()).map(r ->
+                        Items.builder(GuiRoles.getRoleItem(r, null, "null"))
+                                .addLore(
+                                        "§7Clic Gauche pour changer le rôle",
+                                        "§7Clic Molette pour voir le rôle",
+                                        " ",
+                                        "§7Commandes :",
+                                        "§7/" + Main.CMD + " roles " + r.getId(),
+                                        "§7/" + Main.CMD + " players " + player + " role set " + r.getId()
+                                )
+                                .setCantClickOn(true)
+                                .setLeftRightCommandOnClick(
+                                        (gPlayer == null ? Main.CMD + " players " + player + " init\n" : "")
+                                                + Main.CMD + " players " + player + " role set " + r.getId() + "\n" + navigationBaseCommand + " " + page,
+                                        "null"
+                                )
+                                .setMiddleCommandOnClick(Main.CMD + " roles " + r.getId())
+                                .build()).collect(Collectors.toList()));
+    }
+
     public static Inventory getPlayersInventory(String back, String navigationBaseCommand, int page) {
         ArrayList<String> l = new ArrayList<>(new HashSet<String>() {{
             addAll(Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()));
@@ -192,6 +223,30 @@ public class GuiPlayers {
                 .build());
         inv.setItem(Utils.posOf(5, 2), getStats(gPlayer,
                 "§7Cliquez pour rafraichir", Main.CMD + " players " + player));
+
+        inv.setItem(Utils.posOf(4, 3), Items.builder(GuiRoles.getRoleItem(gPlayer == null ? null
+                        : gPlayer.getRoleInfo().getRoleType(), null, "null"))
+                .addLore(
+                        gPlayer == null || gPlayer.getRoleInfo() == null ?
+                                "§7Clic pour attribuer un rôle :"
+                                        + "\n "
+                                        + "\n§7Commande :"
+                                        + "\n§7/" + Main.CMD + " players " + player + " roles"
+                                : "§7Clic Gauche pour voir plus"
+                                + "\n§7Clic Droit pour changer le rôle"
+                                + "\n "
+                                + "\n§7Commandes :"
+                                + "\n§7/" + Main.CMD + " players " + player + " role"
+                                + "\n§7/" + Main.CMD + " players " + player + " roles"
+                )
+                .setLeftRightCommandOnClick(
+                        gPlayer == null || gPlayer.getRoleInfo() == null ?
+                                Main.CMD + " players " + player + " roles"
+                                : Main.CMD + " players " + player + " role",
+                        Main.CMD + " players " + player + " roles"
+                )
+                .setCantClickOn(true)
+                .build());
 
         inv.setItem(Utils.posOf(6, 3), Guis.tp(false, "tp " + player));
         inv.setItem(Utils.posOf(7, 3), Guis.tp(true, "tp " + player + " " + opener.getName()));

@@ -207,6 +207,9 @@ public class GuiGlobal {
             addAll(GManager.getCurrentGame().getPlayers().stream().map(GPlayer::getName).collect(Collectors.toList()));
         }});
 
+        inv.setItem(Utils.posOf(4, 1), GuiRoles.getMainItem(
+                "Clic pour voir plus\n \n§7Commande :\n§7/" + Main.CMD + " roles", Main.CMD + " roles"));
+
         inv.setItem(Utils.posOf(1, 4), GuiPerm.getMainItem(
                 "Clic pour voir plus\n \n§7Commande :\n§7/" + Main.CMD + " perm", Main.CMD + " perm"));
         inv.setItem(Utils.posOf(2, 4), GuiActivations.getMainItem(

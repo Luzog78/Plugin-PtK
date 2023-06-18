@@ -19,7 +19,7 @@ import java.util.Objects;
 
 public class GCMainCommand implements CommandExecutor, TabCompleter {
     public static final String syntaxe = "/" + Main.CMD + " [(? || help) | activations | banner | (bc || broadcast) | compass | date "
-            + "| locks | game | (perm || permissions) | players | portal | stats | teams | title | warp | zone] [<args...>]";
+            + "| locks | game | (perm || permissions) | players | portal | roles | stats | teams | title | warp | zone] [<args...>]";
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String msg, String[] args) {
@@ -81,6 +81,9 @@ public class GCMainCommand implements CommandExecutor, TabCompleter {
                 case "portal":
                     if (hasPerm(sender, true, true) && isNotNull(sender, true))
                         GCPortal.onCommand(sender, command, msg, args);
+                    break;
+                case "roles":
+                    GCRoles.onCommand(sender, command, msg, args);
                     break;
                 case "stats":
                     if (isNotNull(sender, true))
@@ -165,6 +168,7 @@ public class GCMainCommand implements CommandExecutor, TabCompleter {
                 temp.add("players");
             if (hasPerm(sender, true, false) && isNotNull(sender, false))
                 temp.add("portal");
+            temp.add("roles");
             if (isNotNull(sender, false))
                 temp.add("stats");
             if (hasPerm(sender, true, false) && isNotNull(sender, false))
@@ -222,6 +226,9 @@ public class GCMainCommand implements CommandExecutor, TabCompleter {
                 case "portal":
                     if (hasPerm(sender, true, false) && isNotNull(sender, false))
                         temp.addAll(GCPortal.onTabComplete(sender, command, msg, args));
+                    break;
+                case "roles":
+                    temp.addAll(GCRoles.onTabComplete(sender, command, msg, args));
                     break;
                 case "stats":
                     if (isNotNull(sender, false))
