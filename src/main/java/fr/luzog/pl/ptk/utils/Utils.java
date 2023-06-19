@@ -1717,19 +1717,21 @@ public class Utils {
      * @return The string with lines broken.
      */
     public static String breakLines(String str, int maxLength) {
-        String[] words = str.split(" ");
-        StringBuilder ret = new StringBuilder(str.length());
+        return Arrays.stream(str.split("\n")).map(s -> {
+            String[] words = s.split(" ");
+            StringBuilder ret = new StringBuilder();
 
-        int len = 0;
-        for (String word : words) {
-            if (len + word.length() > maxLength) {
-                ret.append("\n");
-                len = 0;
+            int len = 0;
+            for (String word : words) {
+                if (len + ChatColor.stripColor(word).length() > maxLength) {
+                    ret.append("\n");
+                    len = 0;
+                }
+                ret.append(word).append(" ");
+                len += ChatColor.stripColor(word).length() + 1;
             }
-            ret.append(word).append(" ");
-            len += word.length() + 1;
-        }
 
-        return ret.length() > 0 ? ret.substring(0, ret.length() - 1) : ret.toString();
+            return ret.length() > 0 ? ret.substring(0, ret.length() - 1) : ret.toString();
+        }).collect(Collectors.joining("\n"));
     }
 }

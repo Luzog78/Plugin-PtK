@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Main extends JavaPlugin implements Listener {
 
-    public static final Object VERSION = "Alpha 3.11";
+    public static final Object VERSION = "Alpha 4.0.1";
     public static final String CMD = "ptk";
 
     private static final int sideLength = 27;

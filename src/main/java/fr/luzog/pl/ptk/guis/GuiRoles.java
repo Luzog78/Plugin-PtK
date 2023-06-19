@@ -109,17 +109,24 @@ public class GuiRoles {
             heartsDisplay.append("§4❤");
         }
         if (role.getHealthModifier() % 2 == 1) {
+            if ((int) (role.getHealthModifier() / 2) % 10 == 0)
+                heartsDisplay.append("\n  ");
             heartsDisplay.append("§c❤");
         }
         while (ChatColor.stripColor(heartsDisplay.toString().replace("\n", "").replace(" ", "")).length() % 10 != 0) {
             heartsDisplay.append("§8❤");
         }
+        StringBuilder inversedHeartsDisplay = new StringBuilder();
+        for (String line : heartsDisplay.toString().split("\n  ")) {
+            inversedHeartsDisplay.insert(0, line + "\n  ");
+        }
+
         inv.setItem(Utils.posOf(3, 2), Items.builder(Material.GOLDEN_APPLE)
                 .setName("§4Vie : §c" + (role.getHealthModifier() / 2) + "❤")
                 .setLore(
                         "§8" + Guis.loreSeparator,
                         " ",
-                        "  " + heartsDisplay,
+                        "  " + inversedHeartsDisplay,
                         " ",
                         "§8" + Guis.loreSeparator
                 )
