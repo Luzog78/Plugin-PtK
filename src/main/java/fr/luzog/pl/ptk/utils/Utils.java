@@ -1734,4 +1734,27 @@ public class Utils {
             return ret.length() > 0 ? ret.substring(0, ret.length() - 1) : ret.toString();
         }).collect(Collectors.joining("\n"));
     }
+
+    public static String heartsDisplay(double healthPoints) {
+        StringBuilder heartsDisplay = new StringBuilder();
+        for (int i = 0; i < healthPoints / 2; i++) {
+            if (i % 10 == 0 && i != 0)
+                heartsDisplay.append("\n");
+            heartsDisplay.append("§4❤");
+        }
+        if ((int) healthPoints % 2 == 1) {
+            if ((int) (healthPoints / 2) % 10 == 0)
+                heartsDisplay.append("\n");
+            heartsDisplay.append("§c❤");
+        }
+        while (ChatColor.stripColor(heartsDisplay.toString().replace("\n", "").replace(" ", "")).length() % 10 != 0) {
+            heartsDisplay.append("§8❤");
+        }
+        StringBuilder inversedHeartsDisplay = new StringBuilder();
+        for (String line : heartsDisplay.toString().split("\n")) {
+            inversedHeartsDisplay.insert(0, line + "\n");
+        }
+        return inversedHeartsDisplay.length() == 0 ? ""
+                : inversedHeartsDisplay.substring(0, inversedHeartsDisplay.length() - 1);
+    }
 }

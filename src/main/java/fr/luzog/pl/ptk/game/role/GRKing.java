@@ -24,7 +24,8 @@ public class GRKing extends GRole {
     public GRKing() {
         super("Roi ⚜", "Le Roi est le leader de l'équipe. Il doit protéger son équipe et tuer les autres rois.");
         super.setBase(Heads.MISC_CROWN_ICON_YELLOW.getSkull());
-        super.setHealthModifier(40);
+        super.setHealth(40);
+        super.setArmorLimit(0b0000_0000_0000_0000);
         super.setEnchantLimit(Enchantment.DAMAGE_ALL, 4);
         super.addPermaEffects(new Utils.PermaEffect(PotionEffectType.NIGHT_VISION, 0, false),
                 new Utils.PermaEffect(PotionEffectType.FIRE_RESISTANCE, 0, false),
@@ -35,9 +36,9 @@ public class GRKing extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Tant que le §6Roi ⚜§r est en vie, les joueurs de son équipe peuvent subir " +
+                                "Tant que le §6Roi ⚜§r est §e§nen vie§r, les joueurs de son équipe peuvent subir " +
                                         "des dommages sans crainte car à leur mort, ils se font §d§oréanimer§r.",
-                                24).replace("\n", "\n  §r").replace("§r", "§f"),
+                                32).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
                 )

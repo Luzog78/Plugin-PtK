@@ -68,7 +68,7 @@ public class InventoryClickHandler {
             }
         }
 
-        GPlayer gp = null;
+        GPlayer gp;
         if (GManager.getCurrentGame() != null
                 && (gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false)) != null) {
             gp.getStats().increaseClicksOnInventory();

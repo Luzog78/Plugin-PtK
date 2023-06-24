@@ -684,7 +684,7 @@ public class Events implements Listener {
             }
 
             if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
-                gPlayer.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
+                gPlayer.getRoleInfo().getRoleType().getRole().checkForHand(gPlayer.getRoleInfo(), e.getPlayer());
             }
 
             gPlayer.getStats().increasePickedItems();
@@ -734,7 +734,7 @@ public class Events implements Listener {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
 
-                gp.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), e.getPlayer());
 
             }
         }
@@ -775,10 +775,10 @@ public class Events implements Listener {
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
 
                 if (e.hasItem()) {
-                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(e.getItem())) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), e.getItem())) {
                         e.setCancelled(true);
                     }
-                    gp.getRoleInfo().getRoleType().getRole().checkForHand(e.getPlayer());
+                    gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), e.getPlayer());
                 }
 
             }
@@ -990,7 +990,7 @@ public class Events implements Listener {
         if (!e.isCancelled() && e.getWhoClicked().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)
-                    && !gp.getRoleInfo().getRoleType().getRole().checkForItem(e.getRecipe().getResult())) {
+                    && !gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), e.getRecipe().getResult())) {
                 e.setResult(org.bukkit.event.Event.Result.DENY);
             }
         }
@@ -1011,8 +1011,8 @@ public class Events implements Listener {
         if (e.getPlayer().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getPlayer().getName(), false);
             if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
-                gp.getRoleInfo().getRoleType().getRole().checkForArmor((Player) e.getPlayer());
-                gp.getRoleInfo().getRoleType().getRole().checkForHand((Player) e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForArmor(gp.getRoleInfo(), (Player) e.getPlayer());
+                gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), (Player) e.getPlayer());
             }
         }
         Crafting.onClose(e);
@@ -1023,19 +1023,19 @@ public class Events implements Listener {
     public static void onInventoryClick(InventoryClickEvent e) {
         if (!e.isCancelled() && e.getWhoClicked().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false);
-            if (gp != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
+            if (gp != null && gp.getRoleInfo() != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
 
                 if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER
                         && Arrays.asList(36, 37, 38, 39, e.getWhoClicked().getInventory().getHeldItemSlot()).contains(e.getSlot())) {
                     ItemStack is = e.getCursor();
-                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(is)) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
                         e.setCancelled(true);
                     }
                 }
 
                 if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.ANVIL && e.getSlot() == 2) {
                     ItemStack is = e.getCurrentItem();
-                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(is)) {
+                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
                         e.setCancelled(true);
                     }
                 }
@@ -1043,8 +1043,8 @@ public class Events implements Listener {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        gp.getRoleInfo().getRoleType().getRole().checkForArmor((Player) e.getWhoClicked());
-                        gp.getRoleInfo().getRoleType().getRole().checkForHand((Player) e.getWhoClicked());
+                        gp.getRoleInfo().getRoleType().getRole().checkForArmor(gp.getRoleInfo(), (Player) e.getWhoClicked());
+                        gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), (Player) e.getWhoClicked());
                     }
                 }.runTaskLater(Main.instance, 1);
 
@@ -1055,8 +1055,8 @@ public class Events implements Listener {
             Crafting.onClick(e);
         if (!e.isCancelled())
             InputGUIAndTools.onClick(e);
-        if (!e.isCancelled())
-            InventoryClickHandler.onClick(e);
+//        if (!e.isCancelled())  // No verif 'cause I want to check the NBTTags even if the player is in spectator mode
+        InventoryClickHandler.onClick(e);
     }
 
     @EventHandler

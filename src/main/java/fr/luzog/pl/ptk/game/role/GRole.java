@@ -20,6 +20,7 @@ public class GRole {
                 + "Ne vous inquiètez pas, ça arrive !"), GRole.Info.class),
         KING("king", new GRKing(), GRKing.Info.class),
         KNIGHT("knight", new GRKnight(), GRKnight.Info.class),
+        SQUIRE("squire", new GRSquire(), GRSquire.Info.class),
         ;
 
         private final String id;
@@ -57,12 +58,40 @@ public class GRole {
     public static class Info {
         private Roles _roleType;
 
+        /**
+         * > <u>NotNull</u> <br>
+         * <br>
+         * <b>Default:</b> 0 <br>
+         * <br>
+         * The player will have the role's relative health. <br>
+         * >> <code>health = role's health + healthModifier</code>
+         */
+        private double healthModifier;
+        /**
+         * > <u>Nullable</u> <br>
+         * <br>
+         * <b>Default:</b> null <br>
+         * <br>
+         * If null, the player will have the role's armorLimit. <br>
+         * Else, the player will have this armorLimit. <br>
+         * >> <code>limit = this limit != null ? this limit : role's limit</code>
+         */
+        private Integer armorLimit;
+
         public Info() {
             this._roleType = Roles.DEFAULT;
         }
 
         public Info(Roles roleType) {
             this._roleType = roleType;
+            this.healthModifier = 0;
+            this.armorLimit = null;
+        }
+
+        public Info(Roles roleType, double healthModifier, Integer armorLimit) {
+            this._roleType = roleType;
+            this.healthModifier = healthModifier;
+            this.armorLimit = armorLimit;
         }
 
         public void tick(Player p) {
@@ -77,9 +106,35 @@ public class GRole {
             this._roleType = roleType;
         }
 
+        public double getHealthModifier() {
+            return healthModifier;
+        }
+
+        public void setHealthModifier(double healthModifier) {
+            this.healthModifier = healthModifier;
+        }
+
+        public Integer getArmorLimit() {
+            return armorLimit;
+        }
+
+        public void setArmorLimit(Integer armorLimit) {
+            this.armorLimit = armorLimit;
+        }
+
+        public double getFinalHealth() {
+            return _roleType.getRole().getHealth() + healthModifier;
+        }
+
+        public int getFinalArmorLimit() {
+            return armorLimit != null ? armorLimit : _roleType.getRole().getArmorLimit();
+        }
+
         public static Info anyRoleInfoFromMap(Map<String, Object> map) {
             try {
                 Roles role = Roles.fromId((String) map.get("class"));
+                if (role == null)
+                    role = Roles.DEFAULT;
                 return (Info) role.getInfoClass().getMethod("fromMap", Map.class).invoke(null, map);
             } catch (Exception e) {
                 System.out.println(Color.RED + "Error while loading a RoleInfo: " + e.getMessage());
@@ -90,7 +145,9 @@ public class GRole {
         }
 
         public static Info fromMap(Map<String, Object> map) {
-            return new Info(Roles.DEFAULT);
+            double healthModifier = map.get("health-modifier") != null ? Double.parseDouble(map.get("health-modifier") + "") : 0;
+            int armorLimit = map.get("armor-limit") != null ? Integer.parseInt(map.get("armor-limit") + "") : 0;
+            return new Info(Roles.DEFAULT, healthModifier, armorLimit);
         }
 
         public LinkedHashMap<String, Object> toMap() {
@@ -103,7 +160,7 @@ public class GRole {
     private String name;
     private ItemStack base;
     private String description;
-    private float healthModifier;
+    private float health;
     /**
      * Armor limit is the pieces of armor that the player <b><i><u>CANNOT</u></i></b> wear.<br>
      * > &nbsp; <b><code>0b0000_0000_0000_0001</code></b> &nbsp; = &nbsp; Leather Helmet<br>
@@ -135,7 +192,7 @@ public class GRole {
         this.name = name;
         this.base = new ItemStack(Material.BARRIER);
         this.description = description;
-        this.healthModifier = 20;
+        this.health = 20;
         this.armorLimit = 0b0100_0000_0000_0000;
         this.permaEffects = new ArrayList<>();
         this.materialLimit = new ArrayList<>();
@@ -156,7 +213,7 @@ public class GRole {
         this.ability4 = null;
     }
 
-    public GRole(String name, ItemStack base, String description, float healthModifier, int armorLimit,
+    public GRole(String name, ItemStack base, String description, float health, int armorLimit,
                  List<Utils.PermaEffect> permaEffects, List<Material> materialLimit,
                  Map<Enchantment, Integer> enchantLimit, Map<PotionEffectType, Integer> potionLimit,
                  Map<Integer, BukkitRunnable> daysRunnables, ItemStack ability1, ItemStack ability2,
@@ -164,7 +221,7 @@ public class GRole {
         this.name = name;
         this.base = base;
         this.description = description;
-        this.healthModifier = healthModifier;
+        this.health = health;
         this.armorLimit = armorLimit;
         this.permaEffects = permaEffects;
         this.materialLimit = materialLimit;
@@ -191,8 +248,9 @@ public class GRole {
      * @param p        The player to update
      */
     public void tick(Info roleInfo, Player p) {
-        if (p.getMaxHealth() != healthModifier)
-            p.setMaxHealth(healthModifier);
+        double health = roleInfo != null ? roleInfo.getFinalHealth() : this.health;
+        if (p.getMaxHealth() != health)
+            p.setMaxHealth(health);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -202,14 +260,14 @@ public class GRole {
         }.runTask(Main.instance);
     }
 
-    public void checkForArmor(Player p) {
+    public void checkForArmor(Info roleInfo, Player p) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 List<ItemStack> toDrop = new ArrayList<>();
                 ItemStack[] armor = p.getInventory().getArmorContents();
                 for (int i = 0; i < armor.length; i++) {
-                    if (!checkForItem(armor[i])) {
+                    if (!checkForItem(roleInfo, armor[i])) {
                         toDrop.add(armor[i]);
                         armor[i] = null;
                     }
@@ -220,12 +278,12 @@ public class GRole {
         }.runTask(Main.instance);
     }
 
-    public void checkForHand(Player p) {
+    public void checkForHand(Info roleInfo, Player p) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 ItemStack inHand = p.getInventory().getItemInHand();
-                if (!checkForItem(inHand)) {
+                if (!checkForItem(roleInfo, inHand)) {
                     p.getWorld().dropItemNaturally(p.getLocation(), inHand);
                     p.getInventory().setItemInHand(null);
                 }
@@ -233,7 +291,7 @@ public class GRole {
         }.runTask(Main.instance);
     }
 
-    public boolean checkForItem(ItemStack is) {
+    public boolean checkForItem(Info roleInfo, ItemStack is) {
         if (is == null || is.getType() == Material.AIR) {
             return true;
         }
@@ -294,6 +352,7 @@ public class GRole {
             val = 0b0000_0000_0000_0000;
         }
 
+        int armorLimit = roleInfo != null ? roleInfo.getFinalArmorLimit() : this.armorLimit;
         if ((armorLimit & val) != 0) {
             return false;
         }
@@ -389,12 +448,12 @@ public class GRole {
         this.description = description;
     }
 
-    public float getHealthModifier() {
-        return healthModifier;
+    public float getHealth() {
+        return health;
     }
 
-    public void setHealthModifier(float healthModifier) {
-        this.healthModifier = healthModifier;
+    public void setHealth(float health) {
+        this.health = health;
     }
 
     public int getArmorLimit() {

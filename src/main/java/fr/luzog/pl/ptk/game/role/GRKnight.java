@@ -18,9 +18,9 @@ public class GRKnight extends GRole {
     }
 
     public GRKnight() {
-        super("Knight", "The knight is the king's bodyguard. He has to protect his king and kill the other kings.");
+        super("Chevalier", "Le chevalier est le garde du corps du roi. Il doit protéger son roi et tuer les autres rois.");
         super.setBase(Heads.MISC_CROWN_ICON_BLACK.getSkull());
-        super.setHealthModifier(24);
+        super.setHealth(24);
         super.addPermaEffects(new Utils.PermaEffect(PotionEffectType.SPEED, 0, false));
     }
 }

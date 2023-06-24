@@ -4,6 +4,8 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
+import fr.luzog.pl.ptk.game.role.GRSquire;
+import fr.luzog.pl.ptk.game.role.GRole;
 import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.GameMode;
@@ -192,6 +194,12 @@ public class EntityDamageHandler {
                     if (gt.hasKing() || gp.getManager().getDay() == 1) {
                         // Respawn
                         gp.setTeam(gt.getId(), false);
+                        if (gp.getRoleInfo() instanceof GRSquire.Info) {
+                            GRSquire.Info ri = (GRSquire.Info) gp.getRoleInfo();
+                            if (!ri.isKnight()) {
+                                ri.setKnight(true, p);
+                            }
+                        }
                     } else {
                         // Eliminate
                         gt.updatePlayers();

@@ -102,31 +102,17 @@ public class GuiRoles {
         if (info != null)
             inv.setItem(Utils.posOf(7, 1), getRoleInfoItem(info, null, "null"));
 
-        StringBuilder heartsDisplay = new StringBuilder();
-        for (int i = 0; i < role.getHealthModifier() / 2; i++) {
-            if (i % 10 == 0 && i != 0)
-                heartsDisplay.append("\n  ");
-            heartsDisplay.append("§4❤");
-        }
-        if (role.getHealthModifier() % 2 == 1) {
-            if ((int) (role.getHealthModifier() / 2) % 10 == 0)
-                heartsDisplay.append("\n  ");
-            heartsDisplay.append("§c❤");
-        }
-        while (ChatColor.stripColor(heartsDisplay.toString().replace("\n", "").replace(" ", "")).length() % 10 != 0) {
-            heartsDisplay.append("§8❤");
-        }
-        StringBuilder inversedHeartsDisplay = new StringBuilder();
-        for (String line : heartsDisplay.toString().split("\n  ")) {
-            inversedHeartsDisplay.insert(0, line + "\n  ");
-        }
-
         inv.setItem(Utils.posOf(3, 2), Items.builder(Material.GOLDEN_APPLE)
-                .setName("§4Vie : §c" + (role.getHealthModifier() / 2) + "❤")
+                .setName("§4Vie : §c" + ((info == null ? role.getHealth() : info.getFinalHealth()) / 2) + "❤")
                 .setLore(
                         "§8" + Guis.loreSeparator,
                         " ",
-                        "  " + inversedHeartsDisplay,
+                        "  §8Base : §c" + (role.getHealth() / 2) + "❤"
+                                + (info == null ? "" : "\n  §8Modifieur : "
+                                + (info.getHealthModifier() > 0 ? "§a+" : info.getHealthModifier() < 0 ? "§4" : "§7±")
+                                + (info.getHealthModifier() / 2) + "❤"),
+                        " ",
+                        "  " + Utils.heartsDisplay(info == null ? role.getHealth() : info.getFinalHealth()).replace("\n", "\n  "),
                         " ",
                         "§8" + Guis.loreSeparator
                 )
@@ -152,17 +138,17 @@ public class GuiRoles {
         armors.put(0b0100_0000_0000_0000, "Jambières en §bDiamant");
         armors.put(0b1000_0000_0000_0000, "Bottes en §bDiamant");
         armors.forEach((armor, name) -> {
-            if ((role.getArmorLimit() & armor) != 0) {
-                armorsLimit.append("  §4").append(SpecialChars.NO).append("§7  -  §c§n").append(ChatColor.stripColor(name)).append("\n");
-            } else {
-                armorsLimit.append("  §2").append(SpecialChars.YES).append("§7  -  §a").append(name).append("\n");
-            }
+            boolean r = (role.getArmorLimit() & armor) != 0;
+            boolean i = info == null ? r : (info.getFinalArmorLimit() & armor) != 0;
+            armorsLimit.append("  §").append(i ? "4" + SpecialChars.NO : "2" + SpecialChars.YES)
+                    .append("§7  -  §").append(i ? "c" : "a").append(r ? "§n" : "")
+                    .append(r || i ? ChatColor.stripColor(name) : name).append("\n");
         });
         inv.setItem(Utils.posOf(5, 2), Items.builder(Material.DIAMOND_CHESTPLATE)
                 .setName("§bArmures autorisées :")
                 .setLore(
                         "§8" + Guis.loreSeparator,
-                        "§8Code : " + role.getArmorLimit(),
+                        "§8Code de base : " + role.getArmorLimit() + (info == null ? "" : "\n§8Code actuel : " + info.getFinalArmorLimit()),
                         " ",
                         armorsLimit.toString(),
                         " ",
