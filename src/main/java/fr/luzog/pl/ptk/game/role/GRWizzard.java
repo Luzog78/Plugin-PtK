@@ -7,8 +7,6 @@ import fr.luzog.pl.ptk.utils.Heads;
 import fr.luzog.pl.ptk.utils.Items;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
@@ -47,10 +45,10 @@ public class GRWizzard extends GRole {
                                         + "Ce kit représente un bel avantage en début de jeu (en tous cas, avant l'ouverture du nether)...\n"
                                         + " \n"
                                         + "Le joueur obtient alors :\n"
+                                        + "  §8>§r §e1§r alambic.\n"
                                         + "  §8>§r §e2§r potions de §aVitesse II§r buvables.\n"
-                                        + "  §8>§r §e3§r potions de §4Guérison II§r jetables.\n"
-                                        + "  §8>§r §e1§r alambic.",
-                                32).replace("\n", "\n  §r").replace("§r", "§f"),
+                                        + "  §8>§r §e3§r potions de §4Guérison II§r jetables.",
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
                 )
@@ -62,7 +60,21 @@ public class GRWizzard extends GRole {
                         " ",
                         "  §f" + Utils.breakLines(
                                 "Quand le §7Sorcier§r tue un joueur, il a §e50%§r de chances de recevoir §e3§r §6pommes en or§r.",
-                                32).replace("\n", "\n  §r").replace("§r", "§f"),
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
+                        " ",
+                        "§8" + Guis.loreSeparator
+                )
+                .build());
+        super.setAbility3(Items.builder(Material.BLAZE_POWDER)
+                .setName("§7Capacité - §6Ignis Fugere")
+                .setLore(
+                        "§8" + Guis.loreSeparator,
+                        " ",
+                        "  §f" + Utils.breakLines(
+                                "Maître du feu, le §7Sorcier§r a développé au cours des millénaires une capacité à s'§6ignifuger§r.\n"
+                                        + " \n"
+                                        + "Il se voit donc doté d'un effet de §6Résistance au Feu§r de manière §7permanante§r.",
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
                 )

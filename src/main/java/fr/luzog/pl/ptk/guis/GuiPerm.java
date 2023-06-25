@@ -148,7 +148,7 @@ public class GuiPerm {
     }
 
     public static Inventory getPermsInv(GPermissions perms, ItemStack main, ItemStack second, String commandSpecification, String back) {
-        Inventory inv = Guis.getBaseInventory("§fPermissions", 54, back, main, null);
+        Inventory inv = Guis.getBaseInventory("§fPermissions", 54, back, main, second);
 
         int[] j = {10, 11, 12, 13, 14, 15, 16, 28, 29, 30, 32, 33, 34};
         for (int i = 0; i < j.length; i++)
@@ -160,7 +160,6 @@ public class GuiPerm {
                 ignored.printStackTrace();
             }
 
-        inv.setItem(Utils.posOf(4, 1), second);
         return inv;
     }
 

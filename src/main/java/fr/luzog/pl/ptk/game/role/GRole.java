@@ -24,6 +24,7 @@ public class GRole {
         KNIGHT("knight", new GRKnight(), GRKnight.Info.class),
         SQUIRE("squire", new GRSquire(), GRSquire.Info.class),
         WIZZARD("wizzard", new GRWizzard(), GRWizzard.Info.class),
+        WITCH("witch", new GRWitch(), GRWitch.Info.class),
         ;
 
         private final String id;
@@ -185,6 +186,9 @@ public class GRole {
         }
     }
 
+    public static final int DESC_LINE_LENGTH = 32;
+    public static final int ABILITY_LINE_LENGTH = 36;
+
     private String name;
     private ItemStack base;
     private String description;
@@ -234,6 +238,7 @@ public class GRole {
         setEnchantLimit(Enchantment.DURABILITY, 1);
         this.potionLimit = new HashMap<>();
         setPotionLimit(PotionEffectType.INCREASE_DAMAGE, -1);
+        setPotionLimit(PotionEffectType.HARM, 0);
         this.daysRunnables = new HashMap<>();
         this.ability1 = null;
         this.ability2 = null;

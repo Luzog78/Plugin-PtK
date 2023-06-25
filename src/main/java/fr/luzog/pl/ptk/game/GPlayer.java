@@ -2,10 +2,8 @@ package fr.luzog.pl.ptk.game;
 
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Admin.Vanish;
-import fr.luzog.pl.ptk.game.role.GRKing;
 import fr.luzog.pl.ptk.game.role.GRKnight;
 import fr.luzog.pl.ptk.game.role.GRole;
-import fr.luzog.pl.ptk.utils.Color;
 import fr.luzog.pl.ptk.utils.Config;
 import fr.luzog.pl.ptk.utils.PlayerStats;
 import fr.luzog.pl.ptk.utils.Utils;
@@ -108,7 +106,7 @@ public class GPlayer {
         this.lastUuid = null;
 
         this.teamId = null;
-        this.roleInfo = roleInfo == null ? new GRKnight.Info() : roleInfo;
+        this.roleInfo = roleInfo == null ? new GRole.Info() : roleInfo;
         this.compass = null;
 
         this.stats = stats == null ? new PlayerStats() : stats;

@@ -35,7 +35,11 @@ public class GRSquire extends GRole {
         }
 
         public static Info fromMap(Map<String, Object> map) {
-            return new Info(Boolean.parseBoolean(map.get("is-knight") + ""));
+            try {
+                return new Info(Boolean.parseBoolean(map.get("is-knight") + ""));
+            } catch (Exception e) {
+                return new Info();
+            }
         }
 
         public LinkedHashMap<String, Object> toMap() {
@@ -69,13 +73,13 @@ public class GRSquire extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Je joueur peux devenir §7Chevalier§r en tuant un joueur de l'équipe adverse.\n"
+                                "Le joueur peux devenir §7Chevalier§r en tuant un joueur de l'équipe adverse.\n"
                                         + " \n"
                                         + "Il obtient alors :\n"
                                         + "  §8>§r L'effet §cForce I§r de manière §9permanente§r.\n"
-                                        + "  §8>§r Une §bépée en diamant§r avec les enchantements §dSharpness III§r et §dUnbreaking III§r.\n"
+                                        + "  §8>§r Une §bépée en diamant§r avec les enchantements §dTranchant III§r et §dSolidité III§r.\n"
                                         + "  §8>§r Toutes les caractéristiques du §7Chevalier§r (y compris §4coeurs§r, §barmure§r, §deffets§r, etc).",
-                                32).replace("\n", "\n  §r").replace("§r", "§f"),
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
                 )
@@ -113,6 +117,7 @@ public class GRSquire extends GRole {
             if (!info.isKnight()) {
                 info.setKnight(true, gp);
             }
+            gp.saveRoleInfo();
         } catch (Exception ignored) {
         }
     }

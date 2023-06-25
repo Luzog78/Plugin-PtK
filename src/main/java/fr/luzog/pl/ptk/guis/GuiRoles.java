@@ -48,7 +48,7 @@ public class GuiRoles {
                         "  §8ID : §7" + roleType.getId(),
                         " ",
                         "  §8Description :",
-                        "    §7" + Utils.breakLines(role.getDescription(), 32)
+                        "    §7" + Utils.breakLines(role.getDescription(), GRole.DESC_LINE_LENGTH)
                                 .replace("\n", "\n    §7").replace("§r", "§7"),
                         " ",
                         "§8" + Guis.loreSeparator + (lastLoreLine == null ? "" : "\n§7" + lastLoreLine)
@@ -108,9 +108,9 @@ public class GuiRoles {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §8Base : §c" + (role.getHealth() / 2) + "❤"
-                                + (info == null ? "" : "\n  §8Modifieur : "
+                                + (info == null ? "" : " §7("
                                 + (info.getHealthModifier() > 0 ? "§a+" : info.getHealthModifier() < 0 ? "§4" : "§7±")
-                                + (info.getHealthModifier() / 2) + "❤"),
+                                + (info.getHealthModifier() / 2) + "❤§7)"),
                         " ",
                         "  " + Utils.heartsDisplay(info == null ? role.getHealth() : info.getFinalHealth()).replace("\n", "\n  "),
                         " ",
@@ -148,7 +148,7 @@ public class GuiRoles {
                 .setName("§bArmures autorisées :")
                 .setLore(
                         "§8" + Guis.loreSeparator,
-                        "§8Code de base : " + role.getArmorLimit() + (info == null ? "" : "\n§8Code actuel : " + info.getFinalArmorLimit()),
+                        "§8Code : " + role.getArmorLimit() + (info == null ? "" : " | " + info.getFinalArmorLimit()),
                         " ",
                         armorsLimit.toString(),
                         " ",
@@ -162,10 +162,10 @@ public class GuiRoles {
                 .forEach((e) -> {
                     String name = Utils.rawPotionToCommonTermMap.containsKey(e.getKey()) ?
                             Utils.rawPotionToCommonTermMap.get(e.getKey()) : e.getKey().getName();
-                    if (e.getValue() <= 0) {
+                    if (e.getValue() <= -1) {
                         potionsLimit.append("  §4").append(SpecialChars.NO).append("§7  -  §c").append(name).append("\n");
                     } else {
-                        potionsLimit.append("  §6").append(e.getValue()).append("§7  -  §d").append(name).append("\n");
+                        potionsLimit.append("  §6").append(e.getValue() + 1).append("§7  -  §d").append(name).append("\n");
                     }
                 });
         if (potionsLimit.length() == 0) {

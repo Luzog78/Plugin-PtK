@@ -5,6 +5,7 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Cheat.Freeze;
 import fr.luzog.pl.ptk.commands.Utils.InputGUIAndTools;
 import fr.luzog.pl.ptk.game.*;
+import fr.luzog.pl.ptk.game.role.GRWitch;
 import fr.luzog.pl.ptk.utils.*;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -1021,33 +1022,39 @@ public class Events implements Listener {
 
     @EventHandler
     public static void onInventoryClick(InventoryClickEvent e) {
-        if (!e.isCancelled() && e.getWhoClicked().getGameMode() != GameMode.CREATIVE && GManager.getCurrentGame() != null) {
+        if (!e.isCancelled() && GManager.getCurrentGame() != null) {
             GPlayer gp = GManager.getCurrentGame().getPlayer(e.getWhoClicked().getName(), false);
-            if (gp != null && gp.getRoleInfo() != null && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
-
-                if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER
-                        && Arrays.asList(36, 37, 38, 39, e.getWhoClicked().getInventory().getHeldItemSlot()).contains(e.getSlot())) {
-                    ItemStack is = e.getCursor();
-                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
-                        e.setCancelled(true);
-                    }
+            if (gp != null && gp.getRoleInfo() != null) {
+                if (gp.getRoleInfo() instanceof GRWitch.Info) {
+                    ((GRWitch) gp.getRoleInfo().getRoleType().getRole()).onClick(e, gp);
                 }
 
-                if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.ANVIL && e.getSlot() == 2) {
-                    ItemStack is = e.getCurrentItem();
-                    if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
-                        e.setCancelled(true);
+                if (e.getWhoClicked().getGameMode() != GameMode.CREATIVE && !Objects.equals(gp.getTeamId(), GTeam.GODS_ID)) {
+
+                    if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.PLAYER
+                            && Arrays.asList(36, 37, 38, 39, e.getWhoClicked().getInventory().getHeldItemSlot()).contains(e.getSlot())) {
+                        ItemStack is = e.getCursor();
+                        if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
+                            e.setCancelled(true);
+                        }
                     }
+
+                    if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.ANVIL && e.getSlot() == 2) {
+                        ItemStack is = e.getCurrentItem();
+                        if (!gp.getRoleInfo().getRoleType().getRole().checkForItem(gp.getRoleInfo(), is)) {
+                            e.setCancelled(true);
+                        }
+                    }
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            gp.getRoleInfo().getRoleType().getRole().checkForArmor(gp.getRoleInfo(), (Player) e.getWhoClicked());
+                            gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), (Player) e.getWhoClicked());
+                        }
+                    }.runTaskLater(Main.instance, 1);
+
                 }
-
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        gp.getRoleInfo().getRoleType().getRole().checkForArmor(gp.getRoleInfo(), (Player) e.getWhoClicked());
-                        gp.getRoleInfo().getRoleType().getRole().checkForHand(gp.getRoleInfo(), (Player) e.getWhoClicked());
-                    }
-                }.runTaskLater(Main.instance, 1);
-
             }
         }
 

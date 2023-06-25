@@ -30,7 +30,24 @@ public class GRKing extends GRole {
         super.addPermaEffects(new Utils.PermaEffect(PotionEffectType.NIGHT_VISION, 0, false),
                 new Utils.PermaEffect(PotionEffectType.FIRE_RESISTANCE, 0, false),
                 new Utils.PermaEffect(PotionEffectType.REGENERATION, 0, false));
-        super.setAbility1(Items.builder(Material.BED)
+        super.setAbility1(Items.builder(Material.DIAMOND_CHESTPLATE)
+                .setName("§7Capacité - §6Effets Tanks")
+                .setLore(
+                        "§8" + Guis.loreSeparator,
+                        " ",
+                        "  §f" + Utils.breakLines(
+                                "Le §6Roi ⚜§r, pour rester en sécurité, a été gracié par les dieux de moultes effets.\n"
+                                        + " \n"
+                                        + "Il possède donc les effets :\n"
+                                        + "  §8>§r §1Vision Nocture§r de manière §7permanente§r.\n"
+                                        + "  §8>§r §4Régénération I§r de manière §7permanente§r.\n"
+                                        + "  §8>§r §6Résistance au Feu§r de manière §7permanente§r.\n",
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
+                        " ",
+                        "§8" + Guis.loreSeparator
+                )
+                .build());
+        super.setAbility2(Items.builder(Material.BED)
                 .setName("§7Capacité - §6Réanimation")
                 .setLore(
                         "§8" + Guis.loreSeparator,
@@ -38,7 +55,7 @@ public class GRKing extends GRole {
                         "  §f" + Utils.breakLines(
                                 "Tant que le §6Roi ⚜§r est §e§nen vie§r, les joueurs de son équipe peuvent subir " +
                                         "des dommages sans crainte car à leur mort, ils se font §d§oréanimer§r.",
-                                32).replace("\n", "\n  §r").replace("§r", "§f"),
+                                ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
                 )
