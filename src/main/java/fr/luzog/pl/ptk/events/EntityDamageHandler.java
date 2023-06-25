@@ -195,10 +195,7 @@ public class EntityDamageHandler {
                         // Respawn
                         gp.setTeam(gt.getId(), false);
                         if (gp.getRoleInfo() instanceof GRSquire.Info) {
-                            GRSquire.Info ri = (GRSquire.Info) gp.getRoleInfo();
-                            if (!ri.isKnight()) {
-                                ri.setKnight(true, p);
-                            }
+                            ((GRSquire) GRole.Roles.SQUIRE.getRole()).onDeath(gp);
                         }
                     } else {
                         // Eliminate

@@ -5,6 +5,9 @@ import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
+import fr.luzog.pl.ptk.game.role.GRSquire;
+import fr.luzog.pl.ptk.game.role.GRWizzard;
+import fr.luzog.pl.ptk.game.role.GRole;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.GameMode;
 import org.bukkit.enchantments.Enchantment;
@@ -80,6 +83,9 @@ public class EntityDamageByEntityHandler {
                         && ((Player) event.getEntity()).getHealth() - event.getFinalDamage() <= 0) {
                     fp.getStats().increaseKills();
                     fp.saveStats();
+                    if (fp.getRoleInfo() instanceof GRWizzard.Info) {
+                        ((GRWizzard) GRole.Roles.WIZZARD.getRole()).onKill(fp);
+                    }
                 }
             }
         }

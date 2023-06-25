@@ -1,6 +1,8 @@
 package fr.luzog.pl.ptk.game.role;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.events.Events;
+import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.guis.Guis;
 import fr.luzog.pl.ptk.utils.Heads;
 import fr.luzog.pl.ptk.utils.Items;
@@ -46,11 +48,10 @@ public class GRSquire extends GRole {
             return this.isKnight;
         }
 
-        public void setKnight(boolean isKnight, @Nullable Player playerToGiveStuffTo) {
+        public void setKnight(boolean isKnight, @Nullable GPlayer playerToGiveStuffTo) {
             this.isKnight = isKnight;
             if (playerToGiveStuffTo != null) {
-                playerToGiveStuffTo.getInventory().addItem(new ItemStack(Material.DIAMOND_SWORD))
-                        .forEach((i, itemStack) -> playerToGiveStuffTo.getWorld().dropItem(playerToGiveStuffTo.getLocation(), itemStack));
+                playerToGiveStuffTo.addWaitingItem(true, new ItemStack(Material.DIAMOND_SWORD));
             }
         }
     }
@@ -103,5 +104,16 @@ public class GRSquire extends GRole {
         }
 
         super.tick(roleInfo, p);
+    }
+
+    @Events.Event
+    public void onDeath(GPlayer gp) {
+        try {
+            Info info = gp.getRoleInfoAs(GRSquire.Info.class);
+            if (!info.isKnight()) {
+                info.setKnight(true, gp);
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

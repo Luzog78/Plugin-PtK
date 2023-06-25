@@ -24,6 +24,7 @@ import org.bukkit.scoreboard.Scoreboard;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.luzog.pl.ptk.commands.Other.Ad.State.WAITING;
 
@@ -139,9 +140,9 @@ public class GListener {
                                         public void run() {
                                             Player pl = p.getPlayer();
                                             if (pl != null) {
-                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 3, false, false), true);
-                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 100, 255, false, false), true);
-                                                pl.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255, false, false), true);
+                                                p.addWaitingEffect(true, new PotionEffect(PotionEffectType.REGENERATION, 100, 3, false, false),
+                                                        new PotionEffect(PotionEffectType.SATURATION, 100, 255, false, false),
+                                                        new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 255, false, false));
                                                 pl.sendMessage(Main.PREFIX + "§aVous êtes §6§n" + p.getRoleInfo().getRoleType().getRole().getName() + "§a !");
                                                 pl.sendMessage("  §e" + p.getRoleInfo().getRoleType().getRole().getDescription());
                                                 pl.sendMessage("§aBonne chance !");
@@ -156,7 +157,10 @@ public class GListener {
                         }
                         for (GRole.Roles role : GRole.Roles.values()) {
                             if (role.getRole().getDaysRunnables().containsKey(manager.getDay())) {
-                                role.getRole().getDaysRunnables().get(manager.getDay()).runTask(Main.instance);
+                                role.getRole().getDaysRunnables().get(manager.getDay()).runTask(Main.instance,
+                                        manager.getPlayers().stream().filter(p ->
+                                                        p.getRoleInfo() != null && p.getRoleInfo().getRoleType() == role)
+                                                .collect(Collectors.toList()));
                             }
                         }
                     } else if (manager.getTime() >= 24000 - 100 && manager.getTime() % 20 == 0) {
@@ -420,9 +424,7 @@ public class GListener {
      * @param toZ    Position Z of Object B (Targeted Object position)
      * @param radius Radius. If distance is less than radius, orientation is NULL.
      *               &nbsp; <i>(5 is a good value)</i>
-     *
      * @return Indication Arrow
-     *
      * @luzog Copyrights
      */
     public static String getOrientationChar(double yaw, double fromX, double fromZ, double toX, double toZ, double radius) {
@@ -452,7 +454,6 @@ public class GListener {
      * <br>
      *
      * @param yaw Yaw orientation in degrees (yaw ∈ [-360 ; 360])
-     *
      * @return Indication Arrow
      */
     public static String getCompass(double yaw) {

@@ -195,6 +195,8 @@ public class GManager {
                                     Utils.tryTo(printStackTrace, () -> player.setCompass(pc.getCompass(), false));
                                     Utils.tryTo(printStackTrace, () -> player.setStats(Objects.requireNonNull(pc.getStats()), false));
                                     Utils.tryTo(printStackTrace, () -> player.setPersonalPermissions(Objects.requireNonNull(pc.getPermissions()), false));
+                                    Utils.tryTo(printStackTrace, () -> player.setWaitingItems(Objects.requireNonNull(pc.getWaitingItems()), false));
+                                    Utils.tryTo(printStackTrace, () -> player.setWaitingEffects(Objects.requireNonNull(pc.getWaitingEffects()), false));
 
                                     if (!player.getName().equals(""))
                                         manager.getPlayers().add(player);

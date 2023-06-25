@@ -69,10 +69,8 @@ public class BlockBreakHandler {
                     Broadcast.succ(gp.getDisplayName() + "§f de l'équipe §f" + gp.getTeam().getName()
                             + "§r a récupéré le bonus §6doré§r de l'équipe §f" + t.getName() + "§r !");
                     gp.getTeam().getPlayers().forEach(p -> {
-                        if (p.getPlayer() != null) {
-                            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
-                            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 1000000, 4, false, false));
-                        }
+                        p.addWaitingEffect(true, new PotionEffect(PotionEffectType.REGENERATION, 100, 2),
+                                new PotionEffect(PotionEffectType.ABSORPTION, 1000000, 4, false, false));
                     });
                     t.setBreakBonusClaimed(true, true);
                 }

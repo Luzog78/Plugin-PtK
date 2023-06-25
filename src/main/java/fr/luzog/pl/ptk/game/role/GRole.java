@@ -1,12 +1,14 @@
 package fr.luzog.pl.ptk.game.role;
 
 import fr.luzog.pl.ptk.Main;
+import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.utils.Color;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -21,6 +23,7 @@ public class GRole {
         KING("king", new GRKing(), GRKing.Info.class),
         KNIGHT("knight", new GRKnight(), GRKnight.Info.class),
         SQUIRE("squire", new GRSquire(), GRSquire.Info.class),
+        WIZZARD("wizzard", new GRWizzard(), GRWizzard.Info.class),
         ;
 
         private final String id;
@@ -157,6 +160,31 @@ public class GRole {
         }
     }
 
+    public static interface RoleRunnable {
+        /**
+         * Runs the task <b><u>without synchronous check</u></b> (runs only the operations).
+         *
+         * @param players The concerned players.
+         */
+        public void run(List<GPlayer> players);
+
+        /**
+         * Runs the task <b><u>synchronously</u></b> (runs the operations <b>IN</b> a BukkitRunnable).
+         *
+         * @param plugin  The plugin to run the task (for the BukkitRunnable).
+         * @param players The concerned players.
+         */
+        public default void runTask(Plugin plugin, List<GPlayer> players) {
+            RoleRunnable runnable = this;
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    runnable.run(players);
+                }
+            }.runTask(plugin);
+        }
+    }
+
     private String name;
     private ItemStack base;
     private String description;
@@ -185,7 +213,7 @@ public class GRole {
     private List<Material> materialLimit;
     private Map<Enchantment, Integer> enchantLimit;
     private Map<PotionEffectType, Integer> potionLimit;
-    private Map<Integer, BukkitRunnable> daysRunnables;
+    private Map<Integer, RoleRunnable> daysRunnables;
     private ItemStack ability1, ability2, ability3, ability4;
 
     public GRole(String name, String description) {
@@ -216,7 +244,7 @@ public class GRole {
     public GRole(String name, ItemStack base, String description, float health, int armorLimit,
                  List<Utils.PermaEffect> permaEffects, List<Material> materialLimit,
                  Map<Enchantment, Integer> enchantLimit, Map<PotionEffectType, Integer> potionLimit,
-                 Map<Integer, BukkitRunnable> daysRunnables, ItemStack ability1, ItemStack ability2,
+                 Map<Integer, RoleRunnable> daysRunnables, ItemStack ability1, ItemStack ability2,
                  ItemStack ability3, ItemStack ability4) {
         this.name = name;
         this.base = base;
@@ -538,15 +566,15 @@ public class GRole {
         this.potionLimit.remove(potion);
     }
 
-    public Map<Integer, BukkitRunnable> getDaysRunnables() {
+    public Map<Integer, RoleRunnable> getDaysRunnables() {
         return daysRunnables;
     }
 
-    public void setDaysRunnables(Map<Integer, BukkitRunnable> daysRunnables) {
+    public void setDaysRunnables(Map<Integer, RoleRunnable> daysRunnables) {
         this.daysRunnables = daysRunnables;
     }
 
-    public void setDaysRunnable(int day, BukkitRunnable runnable) {
+    public void setDaysRunnable(int day, RoleRunnable runnable) {
         if (this.daysRunnables.containsKey(day))
             this.daysRunnables.replace(day, runnable);
         else

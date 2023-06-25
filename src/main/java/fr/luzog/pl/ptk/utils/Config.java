@@ -7,6 +7,8 @@ import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nonnull;
@@ -749,7 +751,8 @@ public class Config {
 
     public static class Player extends Config {
         public static final String LAST_UUID = "last-uuid", TEAM = "team", ROLE_INFO = "role-info", COMPASS = "compass",
-                STATS = "stats", PERMISSIONS = "permissions", INVENTORIES = "inventories";
+                STATS = "stats", PERMISSIONS = "permissions", WAITING_ITEMS = "waiting.items",
+                WAITING_EFFECTS = "waiting.effects", INVENTORIES = "inventories";
 
         public Player(@Nonnull String path) {
             super(path, true);
@@ -836,14 +839,55 @@ public class Config {
             return this;
         }
 
+        public List<ItemStack> getWaitingItems() {
+            try {
+                return new ArrayList<>(Arrays.asList(Utils.itemStackArrayFromBase64(super.getStr(WAITING_ITEMS))));
+            } catch (Exception e) {
+                return new ArrayList<>();
+            }
+        }
+
+        public Player setWaitingItems(List<ItemStack> items, boolean force) {
+            super.set(WAITING_ITEMS, Utils.itemStackArrayToBase64(items.toArray(new ItemStack[0])), force);
+            return this;
+        }
+
+        public List<PotionEffect> getWaitingEffects() {
+            ArrayList<PotionEffect> l = new ArrayList<>();
+            for (Map<?, ?> map : super.getMapList(WAITING_EFFECTS)) {
+                try {
+                    PotionEffectType type = PotionEffectType.getByName(map.get("type") + "");
+                    if (type == null)
+                        continue;
+                    boolean showParticles = !map.containsKey("show-particles") || Boolean.parseBoolean(map.get("show-particles") + "");
+                    l.add(new PotionEffect(type, Integer.parseInt(map.get("duration") + ""), Integer.parseInt(map.get("amplifier") + ""), false, showParticles));
+                } catch (Exception ignored) {
+                }
+            }
+            return l;
+        }
+
+        public Player setWaitingEffects(List<PotionEffect> effects, boolean force) {
+            super.set(WAITING_EFFECTS, effects.stream().map(e -> {
+                LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+                map.put("type", e.getType().getName());
+                map.put("duration", e.getDuration());
+                map.put("amplifier", e.getAmplifier());
+                map.put("show-particles", e.hasParticles());
+                return map;
+            }).collect(Collectors.toList()), force);
+            return this;
+        }
+
         @SuppressWarnings("unchecked")
         public List<Utils.SavedInventory> getInventories() {
             ArrayList<Utils.SavedInventory> l = new ArrayList<>();
-            for (Map<?, ?> map : super.getMapList(INVENTORIES))
+            for (Map<?, ?> map : super.getMapList(INVENTORIES)) {
                 try {
                     l.add(Utils.SavedInventory.fromMap((Map<String, Object>) map));
                 } catch (Exception ignored) {
                 }
+            }
             return l;
         }
 
@@ -1426,9 +1470,7 @@ public class Config {
      * This function returns a list of UUIDs from a path in the config.
      *
      * @param path The path to the list.
-     *
      * @return A list of UUIDs
-     *
      * @deprecated It will be removed in the future. (No UUID supported for offline mode)
      */
     @Deprecated

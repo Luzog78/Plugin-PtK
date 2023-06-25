@@ -1,5 +1,6 @@
 package fr.luzog.pl.ptk.game;
 
+import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Admin.Vanish;
 import fr.luzog.pl.ptk.game.role.GRKing;
 import fr.luzog.pl.ptk.game.role.GRKnight;
@@ -11,7 +12,10 @@ import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -36,6 +40,8 @@ public class GPlayer {
                 .setInventories(new ArrayList<>(), false)
                 .setStats(stats, true)
                 .setPermissions(personalPermissions, true)
+                .setWaitingItems(waitingItems, true)
+                .setWaitingEffects(waitingEffects, true)
 
                 .save();
     }
@@ -93,6 +99,9 @@ public class GPlayer {
 
     private GListener.PersonalListener personalListener;
 
+    private List<ItemStack> waitingItems;
+    private List<PotionEffect> waitingEffects;
+
     public GPlayer(@Nullable String name, @Nullable GRole.Info roleInfo,
                    @Nullable PlayerStats stats, @Nullable GPermissions personalPermissions) {
         this.name = name;
@@ -106,6 +115,9 @@ public class GPlayer {
         this.personalPermissions = personalPermissions == null ? new GPermissions(GPermissions.Definition.DEFAULT) : personalPermissions;
 
         this.personalListener = new GListener.PersonalListener(this);
+
+        this.waitingItems = new ArrayList<>();
+        this.waitingEffects = new ArrayList<>();
     }
 
     public GPlayer(String name, UUID lastUuid, String teamId, GRole.Info roleInfo, Compass compass,
@@ -119,6 +131,11 @@ public class GPlayer {
 
         this.stats = stats == null ? new PlayerStats() : stats;
         this.personalPermissions = personalPermissions == null ? new GPermissions(GPermissions.Definition.DEFAULT) : personalPermissions;
+
+        this.personalListener = new GListener.PersonalListener(this);
+
+        this.waitingItems = new ArrayList<>();
+        this.waitingEffects = new ArrayList<>();
     }
 
     public Player getPlayer() {
@@ -255,13 +272,19 @@ public class GPlayer {
     public void setRoleInfo(GRole.Info roleInfo, boolean save) {
         try {
             this.roleInfo = roleInfo == null ? (GRole.Info) GRole.Roles.DEFAULT.getInfoClass().newInstance() : roleInfo;
-            if (save && getManager() != null) {
-                if (!getConfig(getManager().getId()).exists())
-                    saveToConfig(getManager().getId(), true);
-                getConfig(getManager().getId()).load().setRoleInfo(roleInfo, true).save();
+            if (save) {
+                saveRoleInfo();
             }
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void saveRoleInfo() {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setRoleInfo(roleInfo, true).save();
         }
     }
 
@@ -367,6 +390,100 @@ public class GPlayer {
     public void setPersonalListener(GListener.PersonalListener personalListener) {
         this.personalListener = personalListener;
         this.personalListener.setGPlayer(this);
+    }
+
+    public List<ItemStack> getWaitingItems() {
+        return waitingItems;
+    }
+
+    public void setWaitingItems(List<ItemStack> waitingItems, boolean save) {
+        this.waitingItems = waitingItems;
+        tryToGiveWaitingItems(save);
+    }
+
+    public void addWaitingItem(boolean save, ItemStack... items) {
+        waitingItems.addAll(Arrays.asList(items));
+        tryToGiveWaitingItems(save);
+    }
+
+    public void removeWaitingItem(boolean save, ItemStack... items) {
+        waitingItems.removeAll(Arrays.asList(items));
+        tryToGiveWaitingItems(save);
+    }
+
+    public void clearWaitingItems(boolean save) {
+        waitingItems.clear();
+        tryToGiveWaitingItems(save);
+    }
+
+    public void tryToGiveWaitingItems(boolean save) {
+        if (getPlayer() != null) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    List<ItemStack> copy = new ArrayList<>(waitingItems);
+                    waitingItems.clear();
+                    getPlayer().getInventory().addItem(copy.toArray(new ItemStack[0]))
+                            .forEach((i, itemStack) -> waitingItems.add(itemStack));
+                }
+            }.runTask(Main.instance);
+        }
+        if (save)
+            saveWaitingItems();
+    }
+
+    public void saveWaitingItems() {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setWaitingItems(waitingItems, true).save();
+        }
+    }
+
+    public List<PotionEffect> getWaitingEffects() {
+        return waitingEffects;
+    }
+
+    public void setWaitingEffects(List<PotionEffect> waitingEffects, boolean save) {
+        this.waitingEffects = waitingEffects;
+        tryToGiveWaitingEffects(save);
+    }
+
+    public void addWaitingEffect(boolean save, PotionEffect... effects) {
+        waitingEffects.addAll(Arrays.asList(effects));
+        tryToGiveWaitingEffects(save);
+    }
+
+    public void removeWaitingEffect(boolean save, PotionEffect... effects) {
+        waitingEffects.removeAll(Arrays.asList(effects));
+        tryToGiveWaitingEffects(save);
+    }
+
+    public void clearWaitingEffects(boolean save) {
+        waitingEffects.clear();
+        tryToGiveWaitingEffects(save);
+    }
+
+    public void tryToGiveWaitingEffects(boolean save) {
+        if (getPlayer() != null) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    waitingEffects.forEach(potionEffect -> getPlayer().addPotionEffect(potionEffect, true));
+                    waitingEffects.clear();
+                }
+            }.runTask(Main.instance);
+        }
+        if (save)
+            saveWaitingEffects();
+    }
+
+    public void saveWaitingEffects() {
+        if (getManager() != null) {
+            if (!getConfig(getManager().getId()).exists())
+                saveToConfig(getManager().getId(), true);
+            getConfig(getManager().getId()).load().setWaitingEffects(waitingEffects, true).save();
+        }
     }
 
     public void saveInventory(@Nullable String id, @Nullable String name, @Nullable String creator, PlayerInventory inventory) {
