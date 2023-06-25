@@ -4,8 +4,7 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
-import fr.luzog.pl.ptk.game.role.GRSquire;
-import fr.luzog.pl.ptk.game.role.GRole;
+import fr.luzog.pl.ptk.game.role.*;
 import fr.luzog.pl.ptk.utils.Broadcast;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.GameMode;
@@ -192,6 +191,9 @@ public class EntityDamageHandler {
                         }
                     }
                 }.runTaskLater(Main.instance, Main.globalConfig.getSpawnProtectionDuration());
+                if (gp.getRoleInfo() instanceof GRFreebooter.Info) {
+                    ((GRFreebooter) gp.getRoleInfo().getRoleType().getRole()).onDeath(gp);
+                }
 
                 GTeam gt = gp.getTeam();
                 if (gt != null) {

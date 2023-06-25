@@ -344,7 +344,7 @@ public class GPickableLocks {
                         gPlayer.getManager().savePickableLocks();
                         pickableLocks.updateAll();
                     }
-            } else {
+            } else if (b.hasMetadata(LOCK_ID_TAG)) {
                 Lock l = pickableLocks.getLock(b.getMetadata(LOCK_ID_TAG).get(0).asString());
 
                 if (is != null && new CustomNBT(is).hasKey(RARITY_TAG) && new CustomNBT(is).getString(RARITY_TAG).equals("admin")) {

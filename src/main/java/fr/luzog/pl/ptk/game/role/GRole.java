@@ -27,6 +27,7 @@ public class GRole {
         WITCH("witch", new GRWitch(), GRWitch.Info.class),
         ARCHER("archer", new GRArcher(), GRArcher.Info.class),
         GUARD("guard", new GRGuard(), GRGuard.Info.class),
+        FREEBOOTER("freebooter", new GRFreebooter(), GRFreebooter.Info.class),
         ;
 
         private final String id;

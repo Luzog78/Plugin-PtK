@@ -5,9 +5,7 @@ import fr.luzog.pl.ptk.game.GManager;
 import fr.luzog.pl.ptk.game.GPermissions;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.game.GTeam;
-import fr.luzog.pl.ptk.game.role.GRSquire;
-import fr.luzog.pl.ptk.game.role.GRWizzard;
-import fr.luzog.pl.ptk.game.role.GRole;
+import fr.luzog.pl.ptk.game.role.*;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.GameMode;
 import org.bukkit.enchantments.Enchantment;
@@ -84,7 +82,11 @@ public class EntityDamageByEntityHandler {
                     fp.getStats().increaseKills();
                     fp.saveStats();
                     if (fp.getRoleInfo() instanceof GRWizzard.Info) {
-                        ((GRWizzard) GRole.Roles.WIZZARD.getRole()).onKill(fp);
+                        ((GRWizzard) fp.getRoleInfo().getRoleType().getRole()).onKill(fp);
+                    }
+                    if (fp.getRoleInfo() instanceof GRFreebooter.Info) {
+                        GPlayer fe = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(event.getEntity().getName(), false);
+                        ((GRFreebooter) fp.getRoleInfo().getRoleType().getRole()).onKill(fp, fe);
                     }
                 }
             }
