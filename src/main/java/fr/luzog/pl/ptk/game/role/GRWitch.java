@@ -121,7 +121,7 @@ public class GRWitch extends GRole {
                                         + "  §8>§r §e2§r potions de §0Faiblesse I§r jetables.\n"
                                         + "  §8>§r §e1§r potion de §4Dégâts II§r jetable.\n"
                                         + "  §8>§r §e1§r potion de §dRégénération I§r jetable.\n"
-                                        + "  §8>§r §e1§r potion de §cForce I§r buvable.\n",
+                                        + "  §8>§r §e1§r potion de §cForce I§r buvable.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -146,7 +146,7 @@ public class GRWitch extends GRole {
                         " ",
                         "  §f" + Utils.breakLines(
                                 "Maîtresse de l'art subtile des potions, toutes les §92 potions§r de malus concoctées, "
-                                        + "une §6troisième§r est créée avec un effet §4malus aléatoire§r.\n",
+                                        + "une §6troisième§r est créée avec un effet §4malus aléatoire§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator

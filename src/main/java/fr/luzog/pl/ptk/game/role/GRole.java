@@ -25,6 +25,7 @@ public class GRole {
         SQUIRE("squire", new GRSquire(), GRSquire.Info.class),
         WIZZARD("wizzard", new GRWizzard(), GRWizzard.Info.class),
         WITCH("witch", new GRWitch(), GRWitch.Info.class),
+        ARCHER("archer", new GRArcher(), GRArcher.Info.class),
         ;
 
         private final String id;
@@ -98,8 +99,8 @@ public class GRole {
             this.armorLimit = armorLimit;
         }
 
-        public void tick(Player p) {
-            _roleType.getRole().tick(this, p);
+        public void tick(GPlayer gp) {
+            _roleType.getRole().tick(this, gp);
         }
 
         public Roles getRoleType() {
@@ -278,19 +279,22 @@ public class GRole {
      * The updates made to the player, linked to the role.
      *
      * @param roleInfo The role info of the player
-     * @param p        The player to update
+     * @param gp       The player to update
      */
-    public void tick(Info roleInfo, Player p) {
-        double health = roleInfo != null ? roleInfo.getFinalHealth() : this.health;
-        if (p.getMaxHealth() != health)
-            p.setMaxHealth(health);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                new ArrayList<>(permaEffects).forEach(e ->
-                        p.addPotionEffect(e.toPotionEffect(260), true));
-            }
-        }.runTask(Main.instance);
+    public void tick(Info roleInfo, GPlayer gp) {
+        Player p = gp.getPlayer();
+        if (p != null) {
+            double health = roleInfo != null ? roleInfo.getFinalHealth() : this.health;
+            if (p.getMaxHealth() != health)
+                p.setMaxHealth(health);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    new ArrayList<>(permaEffects).forEach(e ->
+                            p.addPotionEffect(e.toPotionEffect(260), true));
+                }
+            }.runTask(Main.instance);
+        }
     }
 
     public void checkForArmor(Info roleInfo, Player p) {

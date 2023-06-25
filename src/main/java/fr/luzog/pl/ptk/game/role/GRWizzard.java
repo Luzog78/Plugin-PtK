@@ -91,16 +91,4 @@ public class GRWizzard extends GRole {
         } catch (Exception ignored) {
         }
     }
-
-//    @Events.Event
-//    public void onShoot(EntityShootBowEvent e) {
-//        if (e.getEntity() instanceof Player) {
-//            Player player = (Player) e.getEntity();
-////            player.launchProjectile(org.bukkit.entity.Fireball.class);
-//
-//            if (Math.random() < 0.35) {
-//                e.getProjectile().setFireTicks(200);
-//            }
-//        }
-//    }
 }

@@ -5,6 +5,7 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.commands.Cheat.Freeze;
 import fr.luzog.pl.ptk.commands.Utils.InputGUIAndTools;
 import fr.luzog.pl.ptk.game.*;
+import fr.luzog.pl.ptk.game.role.GRArcher;
 import fr.luzog.pl.ptk.game.role.GRWitch;
 import fr.luzog.pl.ptk.utils.*;
 import org.bukkit.GameMode;
@@ -858,6 +859,14 @@ public class Events implements Listener {
     @EventHandler
     public static void onEntityDamages(EntityDamageEvent e) {
         EntityDamageHandler.onDamage(e);
+        if (e.getEntity() instanceof Player) {
+            Player p = (Player) e.getEntity();
+            GPlayer gp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
+
+            if (gp != null && gp.getRoleInfo() instanceof GRArcher.Info) {
+                ((GRArcher) gp.getRoleInfo().getRoleType().getRole()).onDamage(e);
+            }
+        }
     }
 
     @EventHandler
@@ -1068,6 +1077,18 @@ public class Events implements Listener {
 
     @EventHandler
     public static void onWeatherChange(WeatherChangeEvent e) {
+    }
+
+    @EventHandler
+    public static void onShootBow(EntityShootBowEvent e) {
+        if (e.getEntity() instanceof Player) {
+            Player p = (Player) e.getEntity();
+            GPlayer gp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
+
+            if (gp != null && gp.getRoleInfo() instanceof GRArcher.Info) {
+                ((GRArcher) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
+            }
+        }
     }
 
 }

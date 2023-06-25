@@ -301,39 +301,139 @@ public class GManager {
         return new Config.Manager(String.format(CONFIG_FILE, "game-" + id));
     }
 
-    private int taskID;
-
+    /**
+     * The unique id of the game.
+     */
     private String id;
+    /**
+     * The state of the game.
+     * @see State
+     */
     private State state;
 
+    /**
+     * The current day of the game.<br>
+     * Waiting at day 0, the game starts at day 1.
+     */
     private int day;
+    /**
+     * The current weather of the game.
+     * @see Weather
+     */
     private Weather weather;
+    /**
+     * The current time of the day in ticks.<br>
+     * The value is between 0 and 24000.<br>
+     * 0 is the morning, 6000 is the noon, 12000 is the evening and 18000 is the night.
+     */
     private long time;
+    /**
+     * Is the game's time linked to the sun ?<br>
+     */
     private boolean linkedToSun;
 
+    /**
+     * The current options of the game.<br>
+     * Like the pvp, the nether, the assaults, the end.
+     * @see GOptions
+     */
     private GOptions options;
+    /**
+     * The current listener of the game.<br>
+     * The control center of the game.
+     * @see GListener
+     */
     private GListener listener;
 
+    /**
+     * The current limits of the game.<br>
+     * But I think it's useless. (and it's not working perfectly ^^')
+     * @see Limits
+     */
     private Limits limits;
 
+    /**
+     * The portals.
+     * @see Portal
+     */
     private Portal nether, end;
 
+    /**
+     * The lobby.
+     * @see GZone
+     */
     private GZone lobby;
+    /**
+     * The spawn.
+     * @see GZone
+     */
     private GZone spawn;
+    /**
+     * The OTHER zones.<br>
+     * It doesn't include the lobby and the spawn.
+     * @see GZone
+     */
     private ArrayList<GZone> zones;
 
+    /**
+     * ALL the players of the game.
+     * @see GPlayer
+     */
     private ArrayList<GPlayer> players;
 
+    /**
+     * The gods team.
+     * @see GTeam
+     */
     private GTeam gods;
+    /**
+     * The specs team.
+     * @see GTeam
+     */
     private GTeam specs;
+    /**
+     * The OTHER teams (aka Participant Teams).<br>
+     * It doesn't include the gods and the specs.
+     * @see GTeam
+     */
     private ArrayList<GTeam> teams;
 
+    /**
+     * The global permissions.<br>
+     * It's the default permissions.
+     * @see GPermissions
+     */
     private GPermissions global;
+    /**
+     * The neutral permissions.<br>
+     * It's the permissions of the neutral zones (no-zones).
+     * @see GPermissions
+     */
     private GPermissions neutral;
+    /**
+     * The friendly permissions.<br>
+     * It's the permissions of the friendly zones (like self base).
+     * @see GPermissions
+     */
     private GPermissions friendly;
+    /**
+     * The hostile permissions.<br>
+     * It's the permissions of the hostile zones (like enemy base).
+     * @see GPermissions
+     */
     private GPermissions hostile;
+    /**
+     * The priority permissions.
+     * It's the permissions overriding the other permissions.
+     * @see GPermissions
+     */
     private GPermissions priority;
 
+    /**
+     * The pickable locks.<br>
+     * (100% Working ! I'm proud of it ! xp)
+     * @see GPickableLocks
+     */
     private GPickableLocks pickableLocks;
 
 

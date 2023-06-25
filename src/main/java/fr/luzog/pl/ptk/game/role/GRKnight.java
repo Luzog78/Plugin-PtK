@@ -34,7 +34,7 @@ public class GRKnight extends GRole {
                                 "Le §7Chevalier§r est toujours hâté d'aider son roi.\n" +
                                         "Il se doit, en cas de problème, de se précipiter pour le sauver peu importe la situation.\n"
                                         + " \n"
-                                        + "Il a donc pour cela l'effet §9Rapidité I§r de manière §7permanante§r pour le soutenir dans sa tâche.\n",
+                                        + "Il a donc pour cela l'effet §9Rapidité I§r de manière §7permanante§r pour le soutenir dans sa tâche.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator

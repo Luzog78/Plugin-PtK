@@ -41,7 +41,7 @@ public class GRKing extends GRole {
                                         + "Il possède donc les effets :\n"
                                         + "  §8>§r §1Vision Nocture§r de manière §7permanente§r.\n"
                                         + "  §8>§r §4Régénération I§r de manière §7permanente§r.\n"
-                                        + "  §8>§r §6Résistance au Feu§r de manière §7permanente§r.\n",
+                                        + "  §8>§r §6Résistance au Feu§r de manière §7permanente§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator

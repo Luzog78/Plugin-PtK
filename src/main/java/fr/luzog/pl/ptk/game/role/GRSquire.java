@@ -87,7 +87,7 @@ public class GRSquire extends GRole {
     }
 
     @Override
-    public void tick(GRole.Info roleInfo, Player p) {
+    public void tick(GRole.Info roleInfo, GPlayer gp) {
         if (roleInfo instanceof GRSquire.Info) {
             GRSquire.Info info = (GRSquire.Info) roleInfo;
 
@@ -95,19 +95,22 @@ public class GRSquire extends GRole {
 
                 info.setArmorLimit(Roles.KNIGHT.getRole().getArmorLimit());
                 info.setHealthModifier(Roles.KNIGHT.getRole().getHealth() - roleInfo.getRoleType().getRole().getHealth());
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 260, 0, false, false), true);
-                        new ArrayList<>(Roles.KNIGHT.getRole().getPermaEffects()).forEach(e ->
-                                p.addPotionEffect(e.toPotionEffect(260), true));
-                    }
-                }.runTask(Main.instance);
+                Player p = gp.getPlayer();
+                if (p != null) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 260, 0, false, false), true);
+                            new ArrayList<>(Roles.KNIGHT.getRole().getPermaEffects()).forEach(e ->
+                                    p.addPotionEffect(e.toPotionEffect(260), true));
+                        }
+                    }.runTask(Main.instance);
+                }
 
             }
         }
 
-        super.tick(roleInfo, p);
+        super.tick(roleInfo, gp);
     }
 
     @Events.Event

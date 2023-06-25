@@ -187,6 +187,8 @@ public class GListener {
                 }
 
                 manager.getPlayers().forEach(gPlayer -> {
+                    gPlayer.getRoleInfo().tick(gPlayer);
+
                     Player p = gPlayer.getPlayer();
                     if (p == null)
                         return;
@@ -199,8 +201,6 @@ public class GListener {
                             }
                         }.runTask(Main.instance);
                     }
-
-                    gPlayer.getRoleInfo().tick(p);
 
                     if (gPlayer.getPersonalListener() != null) {
                         gPlayer.getPersonalListener().setScoreLines();
