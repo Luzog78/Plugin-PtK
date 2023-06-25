@@ -76,8 +76,8 @@ public class GRSquire extends GRole {
                                 "Le joueur peux devenir §7Chevalier§r en tuant un joueur de l'équipe adverse.\n"
                                         + " \n"
                                         + "Il obtient alors :\n"
-                                        + "  §8>§r L'effet §cForce I§r de manière §9permanente§r.\n"
-                                        + "  §8>§r Une §bépée en diamant§r avec les enchantements §dTranchant III§r et §dSolidité III§r.\n"
+                                        + "  §8>§r L'effet §cForce §cI§r de manière §9permanente§r.\n"
+                                        + "  §8>§r Une §bépée §ben §bdiamant§r avec les enchantements §dTranchant §dIII§r et §dSolidité §dIII§r.\n"
                                         + "  §8>§r Toutes les caractéristiques du §7Chevalier§r (y compris §4coeurs§r, §barmure§r, §deffets§r, etc).",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",

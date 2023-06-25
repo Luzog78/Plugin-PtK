@@ -26,6 +26,7 @@ public class GRole {
         WIZZARD("wizzard", new GRWizzard(), GRWizzard.Info.class),
         WITCH("witch", new GRWitch(), GRWitch.Info.class),
         ARCHER("archer", new GRArcher(), GRArcher.Info.class),
+        GUARD("guard", new GRGuard(), GRGuard.Info.class),
         ;
 
         private final String id;

@@ -36,12 +36,12 @@ public class GRKing extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Le §6Roi ⚜§r, pour rester en sécurité, a été gracié par les dieux de moultes effets.\n"
+                                "Le §6Roi §6⚜§r, pour rester en sécurité, a été gracié par les dieux de moultes effets.\n"
                                         + " \n"
                                         + "Il possède donc les effets :\n"
-                                        + "  §8>§r §1Vision Nocture§r de manière §7permanente§r.\n"
-                                        + "  §8>§r §4Régénération I§r de manière §7permanente§r.\n"
-                                        + "  §8>§r §6Résistance au Feu§r de manière §7permanente§r.",
+                                        + "  §8>§r §1Vision §1Nocture§r de manière §7permanente§r.\n"
+                                        + "  §8>§r §4Régénération §4I§r de manière §7permanente§r.\n"
+                                        + "  §8>§r §6Résistance §6au §6Feu§r de manière §7permanente§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -53,7 +53,7 @@ public class GRKing extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Tant que le §6Roi ⚜§r est §e§nen vie§r, les joueurs de son équipe peuvent subir " +
+                                "Tant que le §6Roi §6⚜§r est §e§nen §e§nvie§r, les joueurs de son équipe peuvent subir " +
                                         "des dommages sans crainte car à leur mort, ils se font §d§oréanimer§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",

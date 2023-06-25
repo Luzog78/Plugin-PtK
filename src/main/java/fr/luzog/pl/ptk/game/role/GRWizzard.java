@@ -46,8 +46,8 @@ public class GRWizzard extends GRole {
                                         + " \n"
                                         + "Le joueur obtient alors :\n"
                                         + "  §8>§r §e1§r alambic.\n"
-                                        + "  §8>§r §e2§r potions de §aVitesse II§r buvables.\n"
-                                        + "  §8>§r §e3§r potions de §4Guérison II§r jetables.",
+                                        + "  §8>§r §e2§r potions de §aVitesse §aII§r buvables.\n"
+                                        + "  §8>§r §e3§r potions de §4Guérison §4II§r jetables.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -59,7 +59,7 @@ public class GRWizzard extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Quand le §7Sorcier§r tue un joueur, il a §e50%§r de chances de recevoir §e3§r §6pommes en or§r.",
+                                "Quand le §7Sorcier§r tue un joueur, il a §e50%§r de chances de recevoir §e3§r §6pommes §6en §6or§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -73,7 +73,7 @@ public class GRWizzard extends GRole {
                         "  §f" + Utils.breakLines(
                                 "Maître du feu, le §7Sorcier§r a développé au cours des millénaires une capacité à s'§6ignifuger§r.\n"
                                         + " \n"
-                                        + "Il se voit donc doté d'un effet de §6Résistance au Feu§r de manière §7permanante§r.",
+                                        + "Il se voit donc doté d'un effet de §6Résistance §6au §6Feu§r de manière §7permanante§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator

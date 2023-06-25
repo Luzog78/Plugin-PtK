@@ -858,7 +858,6 @@ public class Events implements Listener {
 
     @EventHandler
     public static void onEntityDamages(EntityDamageEvent e) {
-        EntityDamageHandler.onDamage(e);
         if (e.getEntity() instanceof Player) {
             Player p = (Player) e.getEntity();
             GPlayer gp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
@@ -867,6 +866,7 @@ public class Events implements Listener {
                 ((GRArcher) gp.getRoleInfo().getRoleType().getRole()).onDamage(e);
             }
         }
+        EntityDamageHandler.onDamage(e);
     }
 
     @EventHandler

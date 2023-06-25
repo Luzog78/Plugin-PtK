@@ -117,11 +117,11 @@ public class GRWitch extends GRole {
                                         + "Ce kit, fait pour le milieu de jeu, représente un réel danger, couplé aux autres habilités du rôle.\n"
                                         + " \n"
                                         + "Le joueur obtient alors :\n"
-                                        + "  §8>§r §e2§r potions de §2Poison I§r jetables.\n"
-                                        + "  §8>§r §e2§r potions de §0Faiblesse I§r jetables.\n"
-                                        + "  §8>§r §e1§r potion de §4Dégâts II§r jetable.\n"
-                                        + "  §8>§r §e1§r potion de §dRégénération I§r jetable.\n"
-                                        + "  §8>§r §e1§r potion de §cForce I§r buvable.",
+                                        + "  §8>§r §e2§r potions de §2Poison §2I§r jetables.\n"
+                                        + "  §8>§r §e2§r potions de §0Faiblesse §0I§r jetables.\n"
+                                        + "  §8>§r §e1§r potion de §4Dégâts §4II§r jetable.\n"
+                                        + "  §8>§r §e1§r potion de §dRégénération §dI§r jetable.\n"
+                                        + "  §8>§r §e1§r potion de §cForce §cI§r buvable.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -145,8 +145,8 @@ public class GRWitch extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Maîtresse de l'art subtile des potions, toutes les §92 potions§r de malus concoctées, "
-                                        + "une §6troisième§r est créée avec un effet §4malus aléatoire§r.",
+                                "Maîtresse de l'art subtile des potions, toutes les §92 §9potions§r de malus concoctées, "
+                                        + "une §6troisième§r est créée avec un effet §4malus §4aléatoire§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator

@@ -25,6 +25,9 @@ public class EntityDamageHandler {
 
     @Events.Event
     public static void onDamage(EntityDamageEvent e) {
+        if (e.isCancelled())
+            return;
+
         if (e.getEntity().getType() == EntityType.ARMOR_STAND)
             return;
 
@@ -164,6 +167,8 @@ public class EntityDamageHandler {
                 p.setHealth(p.getMaxHealth());
                 p.setFoodLevel(20);
                 p.setSaturation(20f);
+                p.setFallDistance(0);
+                p.setFireTicks(0);
                 ((ExperienceOrb) p.getWorld().spawnEntity(p.getLocation(), EntityType.EXPERIENCE_ORB))
                         .setExperience((int) (Utils.lvlToExp(p.getLevel() + p.getExp()) * 0.75));
                 p.setLevel(0);

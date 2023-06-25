@@ -83,7 +83,7 @@ public class GRArcher extends GRole {
                         " ",
                         "  §f" + Utils.breakLines(
                                 "Léger comme la plume, l'§7archer§r peut tomber sans nulle crainte.\n"
-                                        + "Il ne subit §baucun dégât de chute§r.",
+                                        + "Il ne subit §3aucun §3dégât §3de §3chute§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -95,8 +95,8 @@ public class GRArcher extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Durant §9la nuit§r, l'§7archer§r se déplace bien plus facilement.\n"
-                                        + "Il obtient alors §aVitesse I§r.",
+                                "Durant §9la §9nuit§r, l'§7archer§r se déplace bien plus facilement.\n"
+                                        + "Il obtient alors §aVitesse §aI§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
