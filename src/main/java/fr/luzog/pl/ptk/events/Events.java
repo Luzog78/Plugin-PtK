@@ -6,6 +6,7 @@ import fr.luzog.pl.ptk.commands.Cheat.Freeze;
 import fr.luzog.pl.ptk.commands.Utils.InputGUIAndTools;
 import fr.luzog.pl.ptk.game.*;
 import fr.luzog.pl.ptk.game.role.GRArcher;
+import fr.luzog.pl.ptk.game.role.GRPyromaniac;
 import fr.luzog.pl.ptk.game.role.GRWitch;
 import fr.luzog.pl.ptk.utils.*;
 import org.bukkit.GameMode;
@@ -1085,8 +1086,13 @@ public class Events implements Listener {
             Player p = (Player) e.getEntity();
             GPlayer gp = GManager.getCurrentGame() == null ? null : GManager.getCurrentGame().getPlayer(p.getName(), false);
 
-            if (gp != null && gp.getRoleInfo() instanceof GRArcher.Info) {
-                ((GRArcher) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
+            if (gp != null) {
+                if (gp.getRoleInfo() instanceof GRArcher.Info) {
+                    ((GRArcher) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
+                }
+                if (gp.getRoleInfo() instanceof GRPyromaniac.Info) {
+                    ((GRPyromaniac) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
+                }
             }
         }
     }

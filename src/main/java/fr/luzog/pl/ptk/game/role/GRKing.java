@@ -31,7 +31,7 @@ public class GRKing extends GRole {
                 new Utils.PermaEffect(PotionEffectType.FIRE_RESISTANCE, 0, false),
                 new Utils.PermaEffect(PotionEffectType.REGENERATION, 0, false));
         super.setAbility1(Items.builder(Material.DIAMOND_CHESTPLATE)
-                .setName("§7Capacité - §6Effets Tanks")
+                .setName("§7Capacité - §6Grâce Divine")
                 .setLore(
                         "§8" + Guis.loreSeparator,
                         " ",

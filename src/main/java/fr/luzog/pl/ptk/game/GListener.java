@@ -111,28 +111,35 @@ public class GListener {
                                     team.eliminate(true, false, true);
                                     return;
                                 }
-                                GPlayer player = team.getPlayers().get(new Random().nextInt(team.getPlayers().size()));
+                                List<GPlayer> players = team.getPlayers().stream().filter(p ->
+                                                p.getRoleInfo() == null || p.getRoleInfo().getRoleType() == GRole.Roles.DEFAULT)
+                                        .collect(Collectors.toList());
+                                if (players.size() == 0) {
+                                    return;
+                                }
+                                GPlayer player = players.get(new Random().nextInt(players.size()));
                                 try {
                                     player.setRoleInfo((GRole.Info) GRole.Roles.KING.getInfoClass().newInstance(), true);
+                                    players.remove(player);
                                 } catch (InstantiationException | IllegalAccessException e) {
                                     throw new RuntimeException(e);
                                 }
                                 List<GRole.Roles> roles = new ArrayList<>(Arrays.asList(GRole.Roles.values()));
-                                roles.remove(GRole.Roles.DEFAULT);
                                 roles.remove(GRole.Roles.KING);
-                                Collections.shuffle(roles);
-                                for (GPlayer p : team.getPlayers()) {
-                                    if (p.getRoleInfo() == null || p.getRoleInfo().getRoleType() == GRole.Roles.DEFAULT) {
-                                        try {
-                                            GRole.Roles role = roles.get(0);
-                                            p.setRoleInfo((GRole.Info) role.getInfoClass().newInstance(), true);
-                                            roles.add(role);
-                                            roles.remove(0);
-                                        } catch (InstantiationException | IllegalAccessException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    }
+                                if (roles.size() > 1) {
+                                    roles.remove(GRole.Roles.DEFAULT);
                                 }
+                                Collections.shuffle(roles);
+                                players.forEach(p -> {
+                                    try {
+                                        GRole.Roles role = roles.get(0);
+                                        p.setRoleInfo((GRole.Info) role.getInfoClass().newInstance(), true);
+                                        roles.add(role);
+                                        roles.remove(0);
+                                    } catch (InstantiationException | IllegalAccessException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
                             });
                             manager.getPlayers()//.stream().map(GPlayer::getPlayer).filter(Objects::nonNull)
                                     .forEach(p -> new BukkitRunnable() {

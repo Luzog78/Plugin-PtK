@@ -28,6 +28,7 @@ public class GRole {
         ARCHER("archer", new GRArcher(), GRArcher.Info.class),
         GUARD("guard", new GRGuard(), GRGuard.Info.class),
         FREEBOOTER("freebooter", new GRFreebooter(), GRFreebooter.Info.class),
+        PYROMANIAC("pyromaniac", new GRPyromaniac(), GRPyromaniac.Info.class),
         ;
 
         private final String id;

@@ -89,6 +89,10 @@ public class EntityDamageByEntityHandler {
                         ((GRFreebooter) fp.getRoleInfo().getRoleType().getRole()).onKill(fp, fe);
                     }
                 }
+
+                if (fp.getRoleInfo() instanceof GRPyromaniac.Info) {
+                    ((GRPyromaniac) fp.getRoleInfo().getRoleType().getRole()).onDamageAnEntity(event);
+                }
             }
         }
     }
