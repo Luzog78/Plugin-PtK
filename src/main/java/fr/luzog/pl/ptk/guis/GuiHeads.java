@@ -1,48 +1,22 @@
 package fr.luzog.pl.ptk.guis;
 
-import fr.luzog.pl.ptk.Main;
-import fr.luzog.pl.ptk.commands.Fun.Head;
-import fr.luzog.pl.ptk.game.GListener;
-import fr.luzog.pl.ptk.game.GManager;
-import fr.luzog.pl.ptk.game.GPickableLocks;
 import fr.luzog.pl.ptk.utils.Heads;
 import fr.luzog.pl.ptk.utils.Items;
-import fr.luzog.pl.ptk.utils.SpecialChars;
 import fr.luzog.pl.ptk.utils.Utils;
-import net.minecraft.server.v1_8_R3.TileEntity;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class GuiHeads {
-    private static final String colors = "123456789abcde";
-
-    public static String randomizeColor(String origin) {
-        Random r = new Random();
-        StringBuilder fin = new StringBuilder();
-        for(int i = 0; i < origin.length(); i++) {
-            fin.append("§").append(colors.charAt(r.nextInt(colors.length()))).append(origin.charAt(i));
-        }
-        return fin.toString();
-    }
 
     public static ItemStack getMainItem(String lastLoreLine, String command) {
         return Items.builder(Heads.RAINBOW_CHEST.getSkull())
-                .setName(randomizeColor("Custom Heads"))
+                .setName(Utils.rainbowize("Custom Heads"))
                 .setLore(
                         "§8" + Guis.loreSeparator,
                         " ",
-                        "  " + randomizeColor("Nombre de têtes custom :") + " §f" + Heads.values().length,
+                        "  " + Utils.rainbowize("Nombre de têtes custom :") + " §f" + Heads.values().length,
                         " ",
                         "§8" + Guis.loreSeparator
                                 + (lastLoreLine == null ? "" : "\n§7" + lastLoreLine)
@@ -88,7 +62,7 @@ public class GuiHeads {
                     "§7Clic pour récupérer la tête", "head " + (head.isCustom() ? "-b " : "") + head.getData()));
         }
 
-        Inventory inv = Guis.getPagedInventory(randomizeColor("Custom Heads"), 54, back,
+        Inventory inv = Guis.getPagedInventory(Utils.rainbowize("Custom Heads"), 54, back,
                 getMainItem("Clic pour rafraîchir", navigationBaseCommand + " " + page),
                 null, navigationBaseCommand, page, content);
 

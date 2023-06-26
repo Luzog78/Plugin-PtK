@@ -84,7 +84,7 @@ public class GRWitch extends GRole {
     }
 
     public GRWitch() {
-        super("Sorcière", "Le sorcière, magicienne des abîmes des forêts et marécages, est malgré ses capacités physiques réduites, "
+        super("Sorcière", "La sorcière, magicienne des abîmes des forêts et marécages, est malgré ses capacités physiques réduites, "
                 + "bien plus puissante qu'elle n'y paraît. A base de potions de malus, elle domine facilement ses ennemis.");
         super.setBase(Heads.HEAD_WITCH.getSkull());
         super.setHealth(16);

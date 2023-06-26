@@ -4,10 +4,7 @@ import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.events.Events;
 import fr.luzog.pl.ptk.game.GPlayer;
 import fr.luzog.pl.ptk.guis.Guis;
-import fr.luzog.pl.ptk.utils.Heads;
-import fr.luzog.pl.ptk.utils.Items;
-import fr.luzog.pl.ptk.utils.SpecialChars;
-import fr.luzog.pl.ptk.utils.Utils;
+import fr.luzog.pl.ptk.utils.*;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -49,11 +46,12 @@ public class GRPyromaniac extends GRole {
                 book.setItemMeta(meta);
                 ItemStack flintAndSteel = new ItemStack(Material.FLINT_AND_STEEL);
                 flintAndSteel.addEnchantment(Enchantment.DURABILITY, 3);
+                flintAndSteel = new CustomNBT(flintAndSteel).set(GRole.ALLOWED_ITEM_TAG, true).build();
                 player.addWaitingItem(true, book, flintAndSteel,
                         new ItemStack(Material.LAVA_BUCKET), new ItemStack(Material.LAVA_BUCKET));
             });
         });
-        super.setAbility1(Items.builder(Material.BOW)
+        super.setAbility1(Items.builder(Material.FLINT_AND_STEEL)
                 .setName("§7Capacité - §6Kit Inflammable")
                 .setLore(
                         "§8" + Guis.loreSeparator,

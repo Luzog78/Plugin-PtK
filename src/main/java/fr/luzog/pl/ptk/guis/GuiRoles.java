@@ -112,7 +112,7 @@ public class GuiRoles {
                                 + (info.getHealthModifier() > 0 ? "§a+" : info.getHealthModifier() < 0 ? "§4" : "§7±")
                                 + (info.getHealthModifier() / 2) + "❤§7)"),
                         " ",
-                        "  " + Utils.heartsDisplay(info == null ? role.getHealth() : info.getFinalHealth()).replace("\n", "\n  "),
+                        "  " + Utils.heartsDisplay(info == null ? role.getHealth() : info.getFinalHealth(), 0).replace("\n", "\n  "),
                         " ",
                         "§8" + Guis.loreSeparator
                 )

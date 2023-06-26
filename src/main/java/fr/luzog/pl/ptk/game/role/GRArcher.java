@@ -52,7 +52,7 @@ public class GRArcher extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Ce kit, grâce à sa longue portée, permet à l'§7archer§r de toujours garder un oeil, "
+                                "Ce kit, grâce à sa longue portée, permet à l'§7Archer§r de toujours garder un oeil, "
                                         + "tel une épée de Damoclès, sur ses ennemis.\n"
                                         + " \n"
                                         + "Le joueur obtient alors :\n"
@@ -70,7 +70,7 @@ public class GRArcher extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Les flèches tirées par l'§7archer§r ont §e30%§r de chance de §6s'enflammer§r.",
+                                "Les flèches tirées par l'§7Archer§r ont §e30%§r de chance de §6s'enflammer§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
                         "§8" + Guis.loreSeparator
@@ -82,7 +82,7 @@ public class GRArcher extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Léger comme la plume, l'§7archer§r peut tomber sans nulle crainte.\n"
+                                "Léger comme la plume, l'§7Archer§r peut tomber sans nulle crainte.\n"
                                         + "Il ne subit §3aucun §3dégât §3de §3chute§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
@@ -95,7 +95,7 @@ public class GRArcher extends GRole {
                         "§8" + Guis.loreSeparator,
                         " ",
                         "  §f" + Utils.breakLines(
-                                "Durant §9la §9nuit§r, l'§7archer§r se déplace bien plus facilement.\n"
+                                "Durant §9la §9nuit§r, l'§7Archer§r se déplace bien plus facilement.\n"
                                         + "Il obtient alors §aVitesse §aI§r.",
                                 ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
                         " ",
@@ -120,11 +120,6 @@ public class GRArcher extends GRole {
 
     @Events.Event
     public void onShoot(EntityShootBowEvent e) {
-//        if (e.getEntity() instanceof Player) {
-//            Player player = (Player) e.getEntity();
-//            player.launchProjectile(org.bukkit.entity.Fireball.class);
-//        }
-
         if (Math.random() < 0.30) {
             e.getProjectile().setFireTicks(200);
         }

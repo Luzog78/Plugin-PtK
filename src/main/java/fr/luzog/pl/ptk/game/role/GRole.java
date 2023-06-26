@@ -2,7 +2,10 @@ package fr.luzog.pl.ptk.game.role;
 
 import fr.luzog.pl.ptk.Main;
 import fr.luzog.pl.ptk.game.GPlayer;
+import fr.luzog.pl.ptk.guis.Guis;
 import fr.luzog.pl.ptk.utils.Color;
+import fr.luzog.pl.ptk.utils.CustomNBT;
+import fr.luzog.pl.ptk.utils.Items;
 import fr.luzog.pl.ptk.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -18,8 +21,7 @@ import java.util.*;
 
 public class GRole {
     public static enum Roles {
-        DEFAULT("no-role", new GRole("§cAucun Role", "Vous n'avez tous aucun rôle durant la première phase de jeu. "
-                + "Ne vous inquiètez pas, ça arrive !"), GRole.Info.class),
+        DEFAULT("no-role", generateDefaultRole(), GRole.Info.class),
         KING("king", new GRKing(), GRKing.Info.class),
         KNIGHT("knight", new GRKnight(), GRKnight.Info.class),
         SQUIRE("squire", new GRSquire(), GRSquire.Info.class),
@@ -29,6 +31,7 @@ public class GRole {
         GUARD("guard", new GRGuard(), GRGuard.Info.class),
         FREEBOOTER("freebooter", new GRFreebooter(), GRFreebooter.Info.class),
         PYROMANIAC("pyromaniac", new GRPyromaniac(), GRPyromaniac.Info.class),
+        ARTIFICIER("artificier", new GRArtificier(), GRArtificier.Info.class),
         ;
 
         private final String id;
@@ -60,6 +63,73 @@ public class GRole {
                 }
             }
             return null;
+        }
+
+        private static GRole generateDefaultRole() {
+            GRole r = new GRole("§cAucun Role", "Vous n'avez tous aucun rôle durant la première phase de jeu. "
+                    + "Ne vous inquiètez pas, ça arrive !");
+            r.setAbility1(Items.builder(Material.WOOD_PICKAXE)
+                    .setName("§7Capacité - §6Kit Basique")
+                    .setLore(
+                            "§8" + Guis.loreSeparator,
+                            " ",
+                            "  §f" + Utils.breakLines(
+                                    "Ce kit est un kit de §7base§r. Classique. R-A-S.\n"
+                                            + "Il est donné à tous les joueur §3au §3démarrage§r du jeu.\n"
+                                            + " \n"
+                                            + "Les joueurs obtiennent alors :\n"
+                                            + "  §8>§r §e1§r casque en cuir " + Utils.rainbowize("coloré") + "§r.\n"
+                                            + "  §8>§r §e1§r plastron en cuir " + Utils.rainbowize("coloré") + "§r.\n"
+                                            + "  §8>§r §e1§r jambières en cuir " + Utils.rainbowize("colorées") + "§r.\n"
+                                            + "  §8>§r §e1§r bottes en cuir " + Utils.rainbowize("colorées") + "§r.\n"
+                                            + "  §8>§r §e1§r épée en bois.\n"
+                                            + "  §8>§r §e1§r pioche en bois.\n"
+                                            + "  §8>§r §e1§r hache en bois.\n"
+                                            + "  §8>§r §e1§r pelle en bois.\n"
+                                            + "  §8>§r §e16§r planches de chêne.\n"
+                                            + "  §8>§r §e3§r pommes.\n"
+                                            + "  §8>§r §e16§r steaks.",
+                                    ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
+                            " ",
+                            "§8" + Guis.loreSeparator
+                    )
+                    .build());
+            r.setAbility2(Items.builder(Material.GHAST_TEAR)
+                    .setName("§7Capacité - §6Bénédiction")
+                    .setLore(
+                            "§8" + Guis.loreSeparator,
+                            " ",
+                            "  §f" + Utils.breakLines(
+                                    "Durant le premier jour, tous les joueurs, bénis par les dieux, voient leurs blessures guérir rapidement.\n"
+                                            + " \n"
+                                            + "Les joueurs obtiennent alors :\n"
+                                            + "  §8>§r L'effet §cRégénération §cI§r de manière §7permanante§r uniquement pendant la §3première §3journée§r de jeu.\n"
+                                    ,
+                                    ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
+                            " ",
+                            "§8" + Guis.loreSeparator
+                    )
+                    .build());
+            r.setAbility3(Items.builder(Material.EMERALD)
+                    .setName("§7Capacité - §6Chance du Débutant")
+                    .setLore(
+                            "§8" + Guis.loreSeparator,
+                            " ",
+                            "  §f" + Utils.breakLines(
+                                    "Durant les 2 premières minutes de jeu, tous les joueurs se voient graciés d'un "
+                                            + "puissance leur permettant de faire face à toute éventualité ou danger précoce.\n"
+                                            + " \n"
+                                            + "Les joueurs obtiennent alors :\n"
+                                            + "  §8>§r L'effet §9Vision §9Nocturne§r pendant §c2 §cminutes§r au §3commencement§r du jeu.\n"
+                                            + "  §8>§r L'effet §aVitesse §aII§r pendant §c2 §cminutes§r au §3commencement§r du jeu.\n"
+                                            + "  §8>§r L'effet §6Résistance §6I§r pendant §c2 §cminutes§r au §3commencement§r du jeu.\n"
+                                    ,
+                                    ABILITY_LINE_LENGTH).replace("\n", "\n  §r").replace("§r", "§f"),
+                            " ",
+                            "§8" + Guis.loreSeparator
+                    )
+                    .build());
+            return r;
         }
     }
 
@@ -192,6 +262,8 @@ public class GRole {
 
     public static final int DESC_LINE_LENGTH = 32;
     public static final int ABILITY_LINE_LENGTH = 36;
+
+    public static final String ALLOWED_ITEM_TAG = "ptk-allowed-item";
 
     private String name;
     private ItemStack base;
@@ -333,6 +405,11 @@ public class GRole {
 
     public boolean checkForItem(Info roleInfo, ItemStack is) {
         if (is == null || is.getType() == Material.AIR) {
+            return true;
+        }
+
+        CustomNBT nbt = new CustomNBT(is);
+        if (nbt.hasKey(ALLOWED_ITEM_TAG) && nbt.getBoolean(ALLOWED_ITEM_TAG)) {
             return true;
         }
 

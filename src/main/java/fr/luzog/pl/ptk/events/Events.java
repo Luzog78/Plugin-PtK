@@ -6,6 +6,7 @@ import fr.luzog.pl.ptk.commands.Cheat.Freeze;
 import fr.luzog.pl.ptk.commands.Utils.InputGUIAndTools;
 import fr.luzog.pl.ptk.game.*;
 import fr.luzog.pl.ptk.game.role.GRArcher;
+import fr.luzog.pl.ptk.game.role.GRArtificier;
 import fr.luzog.pl.ptk.game.role.GRPyromaniac;
 import fr.luzog.pl.ptk.game.role.GRWitch;
 import fr.luzog.pl.ptk.utils.*;
@@ -1092,6 +1093,9 @@ public class Events implements Listener {
                 }
                 if (gp.getRoleInfo() instanceof GRPyromaniac.Info) {
                     ((GRPyromaniac) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
+                }
+                if (gp.getRoleInfo() instanceof GRArtificier.Info) {
+                    ((GRArtificier) gp.getRoleInfo().getRoleType().getRole()).onShoot(e);
                 }
             }
         }

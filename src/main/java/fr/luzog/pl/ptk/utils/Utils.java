@@ -1735,20 +1735,44 @@ public class Utils {
         }).collect(Collectors.joining("\n"));
     }
 
-    public static String heartsDisplay(double healthPoints) {
+    public static String heartsDisplay(double health, double absorption) {
         StringBuilder heartsDisplay = new StringBuilder();
-        for (int i = 0; i < healthPoints / 2; i++) {
-            if (i % 10 == 0 && i != 0)
+        int j = 0;
+        for (int i = 0; i < health / 2; i++) {
+            if (j % 10 == 0 && j != 0) {
                 heartsDisplay.append("\n");
+                j = 0;
+            }
             heartsDisplay.append("§4❤");
+            j++;
         }
-        if ((int) healthPoints % 2 == 1) {
-            if ((int) (healthPoints / 2) % 10 == 0)
+        if ((int) health % 2 == 1) {
+            if (j % 10 == 0 && j != 0) {
                 heartsDisplay.append("\n");
+                j = 0;
+            }
             heartsDisplay.append("§c❤");
+            j++;
         }
-        while (ChatColor.stripColor(heartsDisplay.toString().replace("\n", "").replace(" ", "")).length() % 10 != 0) {
+        for (int i = 0; i < absorption / 2; i++) {
+            if (j % 10 == 0 && j != 0) {
+                heartsDisplay.append("\n");
+                j = 0;
+            }
+            heartsDisplay.append("§6❤");
+            j++;
+        }
+        if ((int) absorption % 2 == 1) {
+            if (j % 10 == 0 && j != 0) {
+                heartsDisplay.append("\n");
+                j = 0;
+            }
+            heartsDisplay.append("§e❤");
+            j++;
+        }
+        while (j % 10 != 0) {
             heartsDisplay.append("§8❤");
+            j++;
         }
         StringBuilder inversedHeartsDisplay = new StringBuilder();
         for (String line : heartsDisplay.toString().split("\n")) {
@@ -1756,5 +1780,15 @@ public class Utils {
         }
         return inversedHeartsDisplay.length() == 0 ? ""
                 : inversedHeartsDisplay.substring(0, inversedHeartsDisplay.length() - 1);
+    }
+
+    public static String rainbowize(String origin) {
+        String colors = "123456789abcde";
+        Random r = new Random();
+        StringBuilder fin = new StringBuilder();
+        for(int i = 0; i < origin.length(); i++) {
+            fin.append("§").append(colors.charAt(r.nextInt(colors.length()))).append(origin.charAt(i));
+        }
+        return fin.toString();
     }
 }
